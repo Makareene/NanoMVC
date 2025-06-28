@@ -1,76 +1,45 @@
-NAME:
-    TinyMVC: An MVC application framework for PHP.
+# NanoMVC
 
-AUTHOR:  
-    Monte Ohrt (monte [at] ohrt [dot] com)
-  
-VERSION:
-    1.2.4-dev
-  
-DATE:
-    May 3, 2013
-  
-WEBSITE:
-    http://www.tinymvc.com/
-  
-DOWNLOAD:
-    http://www.tinymvc.com/download
+> ReTinyMVC — a cleaned-up fork of TinyMVC (https://github.com/mohrt/tinymvc-php), updated for PHP 8.4+
 
-ANONYMOUS GIT:
-    https://github.com/mohrt/tinymvc-php
+---
 
-    
-DESCRIPTION:
+## 🔧 What is NanoMVC?
 
-    What is TinyMVC?
-    
-    TinyMVC is an Model-View-Controller application framework for PHP.
-    Its design goals are to minimally provide separation between the database
-    operations (Model), the presentation (View), and the glue in between
-    (Controller). With very little extras bundled in, this framework is
-    extremely fast and flexible. Some design aspects and terminology of TinyMVC
-    have been inspired by other PHP frameworks, although the code is 100%
-    original.
+NanoMVC is a fork of the original TinyMVC framework, rebuilt to be compatible with PHP 8.4+.
+It is not a rewrite, a redesign, or a new framework.
 
-    What TinyMVC is NOT
-    
-    TinyMVC is NOT a full-featured framework. As it stands, it is a simple
-    MVC structure with a database support layer (PDO). Any and all features
-    you desire (form validation, session handling, etc.) are easily added
-    with your own plugins. Plugins will become available in the wiki as
-    they are programmed or contributed by other users. If a plugin is
-    essential enough, it may eventually find its way to the core distribution.
+The goal is simple:
+- ✅ Fix deprecated syntax
+- ✅ Start by making minimal updates to ensure compatibility with PHP 8.4+. Further optimizations may follow to align with PHP 8.4+ best practices
+- ✅ Preserve the original structure and behavior
 
+---
 
-REQUIREMENTS:    
-    
-    TinyMVC requires PHP 5. The bundled database library requires PDO,
-    which is included with PHP 5.1 and up.
-   
-   
-FEATURES:
+## 🧱 Based On
 
-    TinyMVC supplies easy separation between Model, View and
-    Controller, and supports PDO for the database abstraction layer. Each
-    and every component of TinyMVC is customizable with class extensions,
-    and the framework is easily extended with your own plugins.
-    
-    Multiple applications are also easy to handle. You can drop your plugins
-    in at the application level, or you can share them across applications.
-    The file structure is setup so your customizations are kept isolated from
-    the core, so updates are easy to maintain.
-    
+> TinyMVC
+> Author: Monte Ohrt  
+> Website: [tinymvc.com](http://www.tinymvc.com)  
+> Original repo: [tinymvc-php](https://github.com/mohrt/tinymvc-php)
 
-COPYRIGHT:
-    Copyright(c) 2007 New Digital Group, Inc. All rights reserved.
+---
 
-    This library is free software; you can redistribute it and/or modify it
-    under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or (at
-    your option) any later version.
+## 🐘 Requirements
 
-    This library is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
-    License for more details.    
-    
+- PHP 8.4 with PDO enabled (TinyMVC uses PDO by default)
+
+---
+
+## 📄 License
+
+Licensed under the LGPL v2.1 or later 
+Original copyright © 2007  
+NanoMVC modifications © 2025 by Nipaa
+
+---
+
+## ⚠️ Project Status
+
+Work in progress.
+This fork will stay close to the original, with minimal changes — only what’s necessary to keep it alive and working with modern PHP.
