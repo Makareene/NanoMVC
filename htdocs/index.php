@@ -1,40 +1,36 @@
 <?php
 
-/***
- * Name:       TinyMVC
- * About:      An MVC application framework for PHP
- * Copyright:  (C) 2007, New Digital Group Inc.
- * Author:     Monte Ohrt, monte [at] ohrt [dot] com
- * License:    LGPL, see included license file  
- ***/
+/**
+ * Name:       NanoMVC
+ * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * Copyright:  (C) 2007, New Digital Group Inc. | Modifications (C) 2025, Nipaa
+ * License:    LGPL v2.1 or later (see LICENSE file)
+ */
 
-/* PHP error reporting level, if different from default */
+// Enable full error reporting
 error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
-/* if the /tinymvc/ dir is not up one directory, uncomment and set here */
-//define('TMVC_BASEDIR','../tinymvc/');
+// Uncomment and set if the /nanomvc/ dir is not one level above this file
+// define('NMVC_BASEDIR', '../nanomvc/');
 
-/* if the /myapp/ dir is not inside the /tinymvc/ dir, uncomment and set here */
-//define('TMVC_MYAPPDIR','/path/to/myapp/');
+// Uncomment and set if the /myapp/ dir is not inside /nanomvc/
+// define('NMVC_MYAPPDIR', '/path/to/myapp/');
 
-/* define to 0 if you want errors/exceptions handled externally */
-define('TMVC_ERROR_HANDLING',1);
+// Set to 0 if you want external error/exception handling
+define('NMVC_ERROR_HANDLING', 1);
 
-/* directory separator alias */
-if(!defined('DS'))
-  define('DS',DIRECTORY_SEPARATOR);
+// Directory separator constant
+if (!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
 
-/* set the base directory */
-if(!defined('TMVC_BASEDIR'))
-  define('TMVC_BASEDIR',dirname(__FILE__) . DS . '..' . DS . 'tinymvc' . DS);
+// Base directory of the framework
+if (!defined('NMVC_BASEDIR')) define('NMVC_BASEDIR', dirname(__FILE__) . DS . '..' . DS . 'nanomvc' . DS);
 
-/* include main tmvc class */
-require(TMVC_BASEDIR . 'sysfiles' . DS . 'TinyMVC.php');
+// Load the core NanoMVC system
+require NMVC_BASEDIR . 'sysfiles' . DS . 'NanoMVC.php';
 
-/* instantiate */
-$tmvc = new tmvc();
-
-/* tally-ho! */
-$tmvc->main();
+// Create and run the app
+$nmvc = new nmvc();
+$nmvc->main();
 
 ?>
