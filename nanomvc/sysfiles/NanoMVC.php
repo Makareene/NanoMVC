@@ -18,9 +18,9 @@ if(!defined('NMVC_MYAPPDIR')) define('NMVC_MYAPPDIR', NMVC_BASEDIR . 'myapp' . D
 
 // Set include_path for spl_autoload to scan relevant directories
 $paths = [
-    NMVC_MYAPPDIR,
-    NMVC_BASEDIR . 'myfiles' . DS,
-    NMVC_BASEDIR . 'sysfiles' . DS,
+  NMVC_MYAPPDIR,
+  NMVC_BASEDIR . 'myfiles' . DS,
+  NMVC_BASEDIR . 'sysfiles' . DS,
 ];
 
 $subdirs = ['controllers', 'models', 'configs', 'plugins', 'views'];
@@ -28,8 +28,8 @@ $subdirs = ['controllers', 'models', 'configs', 'plugins', 'views'];
 $includePaths = [get_include_path()];
 
 foreach ($paths as $basePath) 
-    foreach ($subdirs as $subdir) 
-        $includePaths[] = $basePath . $subdir . DS;
+  foreach ($subdirs as $subdir)
+    $includePaths[] = $basePath . $subdir . DS;
 
 set_include_path(implode(PATH_SEPARATOR, $includePaths));
 
