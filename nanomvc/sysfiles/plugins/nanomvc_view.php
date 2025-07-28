@@ -16,8 +16,7 @@
  * @package    NanoMVC
  * @author     Monte Ohrt, Nipaa (modifications)
  */
-class NanoMVC_View
-{
+class NanoMVC_View {
   public array $view_vars = [];
 
   /**
@@ -105,10 +104,11 @@ class NanoMVC_View
   private function _view(string $_nmvc_filepath, ?array $view_vars = null): void {
     extract($this->view_vars);
     if (isset($view_vars)) extract($view_vars);
-    try
+    try {
       include($_nmvc_filepath);
-    catch (Exception $e)
+    } catch (Exception $e) {
       throw new Exception("Unknown file '$_nmvc_filepath'");
+    }
   }
 }
 

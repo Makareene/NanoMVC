@@ -1,45 +1,72 @@
 # NanoMVC
 
-> ReTinyMVC — a cleaned-up fork of TinyMVC (https://github.com/mohrt/tinymvc-php), updated for PHP 8.4+
+> A modernized, PHP 8.3+ compatible fork of [TinyMVC](https://github.com/mohrt/tinymvc-php) — minimal, fast, and extensible.
 
 ---
 
 ## 🔧 What is NanoMVC?
 
-NanoMVC is a fork of the original TinyMVC framework, rebuilt to be compatible with PHP 8.4+.
-It is not a rewrite, a redesign, or a new framework.
+NanoMVC is a cleaned-up fork of the original TinyMVC framework, reworked to support PHP 8.4+ while preserving its lightweight nature and architecture.
 
-The goal is simple:
-- ✅ Fix deprecated syntax
-- ✅ Start by making minimal updates to ensure compatibility with PHP 8.4+. Further optimizations may follow to align with PHP 8.4+ best practices
-- ✅ Preserve the original structure and behavior
+It is **not a rewrite**, but a carefully maintained continuation with compatibility and minimalism in mind.
+
+### Goals:
+- ✅ Update deprecated PHP syntax and features
+- ✅ Make the framework work flawlessly on PHP 8.3+
+- ✅ Preserve the original architecture and simplicity
+- ✅ Add modern enhancements without breaking backwards compatibility
 
 ---
 
-## 🧱 Based On
+## 🚀 What’s New in 1.0.2
 
-> TinyMVC
-> Author: Monte Ohrt  
-> Website: [tinymvc.com](http://www.tinymvc.com)  
-> Original repo: [tinymvc-php](https://github.com/mohrt/tinymvc-php)
+- 🔹 Core system moved into a separate file: `NanoMVCCore.php`, introducing the new base class `nmvc_core`
+- 🔹 `NanoMVC.php` now simply extends it via `class nmvc extends nmvc_core {}` — allows safe customization
+- 🔹 **Case-insensitive routing**: Controller names in URLs are no longer case-sensitive
+- 🔹 Access original URL casing inside controllers:
+  `$this->_get_controller()` and `$this->_get_action()`
+- 🔹 Autoloaded models now support parameters via config
+- 🔹 Redesigned welcome view template
+- 🔹 **PostgreSQL support** in the PDO plugin
+  - Includes support for `port` and `schema` options
+  - Improved `num_rows()` and `last_query()` methods (now includes bound parameters)
+- 🔹 Minor bug fixes and cleanup
+
+🧾 Full changelog is available in [NEWS](./NEWS)
+
+---
+
+## 📚 Documentation & Website
+
+📖 [https://nanomvc.nipaa.fyi](https://nanomvc.nipaa.fyi)
 
 ---
 
 ## 🐘 Requirements
 
-- PHP 8.4 with PDO enabled (TinyMVC uses PDO by default)
+- PHP 8.3 or later
+- PDO extension enabled
+
+---
+
+## 🧱 Based On
+
+> **TinyMVC**
+> Author: Monte Ohrt
+> Website: [tinymvc.com](http://www.tinymvc.com)
+> Repo: [github.com/mohrt/tinymvc-php](https://github.com/mohrt/tinymvc-php)
 
 ---
 
 ## 📄 License
 
-Licensed under the LGPL v2.1 or later 
-Original copyright © 2007  
+Licensed under the LGPL v2.1 or later
+Original code © 2007 by Monte Ohrt
 NanoMVC modifications © 2025 by Nipaa
 
 ---
 
-## ⚠️ Project Status
+## 📌 Project Status
 
-Work in progress.
-This fork will stay close to the original, with minimal changes — only what’s necessary to keep it alive and working with modern PHP.
+NanoMVC is an active fork with modern PHP support.
+It will stay close to TinyMVC’s original goals while adding clean, opt-in improvements.

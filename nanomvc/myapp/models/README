@@ -1,3 +1,8 @@
 myapp/models
 
-This is where model files go for your application.
+This is where you place the model files for your application.
+
+Each model should contain the data logic and interact with the database.
+In single-application setups, all models go here.
+
+Avoid placing shared models in this directory if you're working with multiple applications — instead, use myfiles/models for shared logic.

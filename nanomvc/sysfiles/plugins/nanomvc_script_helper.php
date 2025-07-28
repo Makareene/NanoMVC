@@ -31,7 +31,7 @@ class NanoMVC_Script_Helper {
    * @param bool $hide Hide in HTML comments
    * @return string|void
    */
-  public static function debug(mixed $var, ?string $name = null, bool $return = false, bool $esc = true, bool $hide = false): string|void {
+  public static function debug(mixed $var, ?string $name = null, bool $return = false, bool $esc = true, bool $hide = false): ?string {
     ob_start();
 
     if (!$hide) {
@@ -51,6 +51,7 @@ class NanoMVC_Script_Helper {
     }
 
     ob_end_flush();
+    return null;
   }
 
   /**

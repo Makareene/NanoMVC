@@ -25,7 +25,7 @@ $config['default_action'] = 'index';
 // PHP class that handles system errors
 $config['error_handler_class'] = 'NanoMVC_ErrorHandler';
 
-// Enable timer. Use {TMVC_TIMER} in your view to see it
+// Enable timer. Use {NMVC_TIMER} in your view to see it
 $config['timer'] = true;
 
 ?>

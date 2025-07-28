@@ -24,10 +24,10 @@ class NanoMVC_ExceptionHandler extends ErrorException {
    * printException
    *
    * @access public
-   * @param Exception $e
+   * @param Throwable $e
    * @return void
    */
-  public static function printException(Exception $e): void {
+  public static function printException(Throwable $e): void {
     switch ($e->getCode()) {
       case E_ERROR:             $code_name = 'E_ERROR'; break;
       case E_WARNING:           $code_name = 'E_WARNING'; break;
@@ -58,10 +58,10 @@ class NanoMVC_ExceptionHandler extends ErrorException {
    * handleException
    *
    * @access public
-   * @param Exception $e
+   * @param Throwable $e
    * @return void
    */
-  public static function handleException(Exception $e): void {
+  public static function handleException(Throwable $e): void {
     self::printException($e);
   }
 }

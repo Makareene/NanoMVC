@@ -20,6 +20,8 @@ class NanoMVC_Controller {
 
   public NanoMVC_Load $load;
   public NanoMVC_View $view;
+  private string|null $action = null;
+  private string|null $controller = null;
 
   /**
    * class constructor
@@ -54,6 +56,23 @@ class NanoMVC_Controller {
   public function __call(string $function, array $args): void {
     throw new Exception("Unknown controller method '{$function}'");
   }
+
+  public final function _set_action($name): void {
+    $this->action = $name;
+  }
+
+  protected final function _get_action(): string|null {
+    return $this->action;
+  }
+
+  public final function _set_controller($name): void {
+    $this->controller = $name;
+  }
+
+  protected final function _get_controller(): string|null {
+    return $this->controller;
+  }
+
 }
 
 ?>

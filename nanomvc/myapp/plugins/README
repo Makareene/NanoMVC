@@ -1,11 +1,9 @@
 myapp/plugins
 
-Place plugins here.
+Place your application-specific plugins in this directory.
 
-In a single-application install (one "myapp" directory), it is OK
-to put all plugins in myapp/plugins and leave myfiles/plugins alone.
+In a single-application setup (one "myapp" directory), it is fine to put all plugins in myapp/plugins and leave myfiles/plugins unused.
 
-In a multi-application install, shared plugins should be placed in
-myfiles/plugins, and application-specific plugins go in myapp/plugins.
+In a multi-application setup, shared plugins should go in myfiles/plugins, while application-specific ones should be placed in each app's myapp/plugins directory.
 
-You should never touch files under the sysfiles directory.
+Do not modify anything under the sysfiles directory. It contains core framework files and may be overwritten during updates.

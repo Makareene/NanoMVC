@@ -1,11 +1,17 @@
 myfiles/plugins
 
-Place plugins here.
+This folder is reserved for your shared plugins.
 
-In a single-application install (one "myapp" directory), it is OK
-to put all plugins in myapp/plugins and leave myfiles/plugins alone.
+In a single-application installation, you may place all plugins in `myapp/plugins`,
+and leave this folder unused.
 
-In a multi-application install, shared plugins should be placed in
-myfiles/plugins, and application-specific plugins go in myapp/plugins.
+In a multi-application installation, shared plugins that should be accessible
+to all apps can be placed here (`myfiles/plugins`).
+
+NanoMVC will never overwrite anything in the `myfiles` directory. You are free
+to place any custom code here.
+
+To keep this folder version-controlled without affecting your code,
+only this README file is tracked by Git.
 
 You should never touch files under the sysfiles directory.

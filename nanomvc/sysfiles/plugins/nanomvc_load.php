@@ -40,8 +40,6 @@ class NanoMVC_Load {
   public function model(string $model_name, ?string $model_alias = null, ?string $filename = null, ?string $pool_name = null): bool {
     $model_alias ??= $model_name; // if no alias, use model name
 
-    $filename ??= strtolower($model_name) . '.php'; // default filename (unused)
-
     if (empty($model_alias)) throw new Exception("Model name cannot be empty");
 
     if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]+$/', $model_alias)) throw new Exception("Model name '{$model_alias}' is an invalid syntax");

@@ -41,8 +41,20 @@ class NanoMVC_PDO {
   /** @var string|null $last_query Last executed query */
   public ?string $last_query = null;
 
+  /** @var array $last_params Params of last executed query */
+  private array $last_params = [];
+
   /** @var string|null $last_query_type Type of last query */
   public ?string $last_query_type = null;
+
+  /** @var string PDO driver */
+  public string $driver = '';
+
+  /** @var string identifier quoting */
+  public string $quoting = '';
+
+  /** @var int Number of rows returned by SELECT query */
+  public int $num_rows = 0;
   
   /**
    * class constructor
@@ -59,26 +71,36 @@ class NanoMVC_PDO {
     $type = strtolower($config['type'] ?? '');
     $charset = $config['charset'] ?? (in_array($type, ['mysql', 'mariadb']) ? 'utf8mb4' : ($type === 'pgsql' ? 'UTF8' : null));
 
-    if ($charset) $config['charset'] = $charset;
+    $port = isset($config['port']) ? $config['port'] : null;
+    $schema = isset($config['schema']) ? $config['schema'] : null;
 
     // Build DSN
     if (!empty($config['dsn'])) $dsn = $config['dsn'];
     elseif ($type === 'sqlsrv') $dsn = "sqlsrv:Server={$config['host']};Database={$config['name']}";
-    elseif ($type === 'pgsql') $dsn = "pgsql:host={$config['host']};dbname={$config['name']}";
-    else $dsn = "{$type}:host={$config['host']};dbname={$config['name']};charset={$config['charset']}"; // default to MySQL/MariaDB
+    elseif ($type === 'pgsql') $dsn = "pgsql:host={$config['host']};dbname={$config['name']}" . ($port ? ";port=$port" : "");
+    else $dsn = "{$type}:host={$config['host']}" . ($port ? ";port=$port" : "") . ";dbname={$config['name']};charset={$charset}"; // default to MySQL/MariaDB
 
     try {
       $this->pdo = new PDO($dsn, $config['user'], $config['pass'], [PDO::ATTR_PERSISTENT => !empty($config['persistent'])]);
 
-      if (in_array($type, ['mysql', 'mariadb'])) $this->pdo->exec("SET CHARACTER SET {$config['charset']}"); // Apply charset for MySQL/MariaDB
+      if (in_array($type, ['mysql', 'mariadb'])) $this->pdo->exec("SET CHARACTER SET {$charset}"); // Apply charset for MySQL/MariaDB
 
-      if ($type === 'pgsql' && $charset) $this->pdo->exec("SET client_encoding TO '{$charset}'"); // Apply charset for PostgreSQL (client encoding)
+      if ($type === 'pgsql') {
+        if ($charset) $this->pdo->exec("SET client_encoding TO '{$charset}'"); // Apply charset for PostgreSQL (client encoding)
+
+        if ($schema) $this->pdo->exec("SET search_path TO {$schema}"); //Apply schema
+      }
 
       $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     } catch (PDOException $e) {
       throw new Exception(sprintf("Can't connect to PDO database '%s'. Error: %s", $type, $e->getMessage()));
     }
+
+    $this->driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+    $this->quoting = $this->driver === 'mysql' ? '`' : '"';
+
   }
 
 	/**
@@ -119,11 +141,7 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   public function where(string $clause, array|string|int|float|null $args): void {
-    if (empty($clause)) throw new Exception("WHERE clause cannot be empty");
-
-    if (!preg_match('/[=<>]/', $clause)) $clause .= '=';
-
-    if (strpos($clause, '?') === false) $clause .= '?';
+    $this->_set_whereclause($clause);
 
     $this->_where($clause, (array) $args, 'AND');
   }
@@ -139,6 +157,8 @@ class NanoMVC_PDO {
    * @return void
    */
   public function orwhere(string $clause, array|string|int|float|null $args): void {
+    $this->_set_whereclause($clause);
+
     $this->_where($clause, (array) $args, 'OR');
   }
   
@@ -155,8 +175,7 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   private function _where(string $clause, array $args = [], string $prefix = 'AND'): array {
-    if (empty($clause))
-      throw new Exception("WHERE clause cannot be empty");
+    if (empty($clause)) throw new Exception("WHERE clause cannot be empty");
 
     $placeholders = substr_count($clause, '?');
 
@@ -167,7 +186,6 @@ class NanoMVC_PDO {
 
     $this->query_params['where'] ??= [];
     $this->query_params['where'][] = $entry;
-
     return $entry;
   }
 
@@ -279,7 +297,7 @@ class NanoMVC_PDO {
    * @return void
    */
   public function limit(int $limit, int $offset = 0): void {
-    $sql = $offset > 0 ? "{$offset},{$limit}" : (string)$limit;
+    $sql = $offset > 0 ? "{$limit} OFFSET {$offset}" : (string)$limit;
     $this->_set_clause('limit', $sql);
   }
 
@@ -313,7 +331,7 @@ class NanoMVC_PDO {
    * @return string
    * @throws Exception
    */
-  private function _query_assemble(array &$params, ?int $fetch_mode = null): string {
+  private function _query_assemble(array &$params = [], ?int $fetch_mode = null): string {
     if (empty($this->query_params['from'])) throw new Exception("FROM clause is required. Call from() before get().");
 
     $parts = [];
@@ -324,6 +342,8 @@ class NanoMVC_PDO {
       foreach ($this->query_params['join'] as $join_clause)
         $parts[] = $join_clause;
 
+    $where_clause = '';
+
     if ($this->_assemble_where($where_clause, $params)) $parts[] = $where_clause;
 
     if (!empty($this->query_params['groupby'])) $parts[] = "GROUP BY {$this->query_params['groupby']['clause']}";
@@ -333,7 +353,6 @@ class NanoMVC_PDO {
     if (!empty($this->query_params['limit'])) $parts[] = "LIMIT {$this->query_params['limit']['clause']}";
 
     $query_string = implode(' ', $parts);
-    $this->last_query = $query_string;
 
     $this->query_params = ['select' => '*']; // reset for next query
 
@@ -350,11 +369,10 @@ class NanoMVC_PDO {
    * @param array &$params
    * @return bool
    */
-  private function _assemble_where(string &$where, array &$params): bool {
+  private function _assemble_where(string &$where, array &$params = []): bool {
     if (empty($this->query_params['where'])) return false;
 
     $clauses = [];
-    $params = [];
     $first = true;
 
     foreach ($this->query_params['where'] as $condition) {
@@ -379,7 +397,7 @@ class NanoMVC_PDO {
    * @param int|null $fetch_mode
    * @return mixed
    */
-  public function query(?string $query = null, ?array $params = null, ?int $fetch_mode = null): mixed {
+  public function query(?string $query = null, array $params = [], ?int $fetch_mode = null): mixed {
     if ($query === null) $query = $this->_query_assemble($params, $fetch_mode);
 
     return $this->_query($query, $params, NMVC_SQL_NONE, $fetch_mode);
@@ -396,7 +414,7 @@ class NanoMVC_PDO {
    * @param int|null $fetch_mode
    * @return array
    */
-  public function query_all(?string $query = null, ?array $params = null, ?int $fetch_mode = null): array {
+  public function query_all(?string $query = null, array $params = [], ?int $fetch_mode = null): array {
     if ($query === null) $query = $this->_query_assemble($params, $fetch_mode);
 
     return $this->_query($query, $params, NMVC_SQL_ALL, $fetch_mode);
@@ -413,7 +431,7 @@ class NanoMVC_PDO {
    * @param int|null $fetch_mode
    * @return mixed
    */
-  public function query_one(?string $query = null, ?array $params = null, ?int $fetch_mode = null): mixed {
+  public function query_one(?string $query = null, array $params = [], ?int $fetch_mode = null): mixed {
     if ($query === null) {
       $this->limit(1);
       $query = $this->_query_assemble($params, $fetch_mode);
@@ -435,7 +453,7 @@ class NanoMVC_PDO {
    * @return mixed
    * @throws Exception
    */
-  private function _query(string $query, ?array $params = null, int $return_type = NMVC_SQL_NONE, ?int $fetch_mode = null): mixed {
+  private function _query(string $query, array $params = [], int $return_type = NMVC_SQL_NONE, ?int $fetch_mode = null): mixed {
     $fetch_mode ??= $this->fetch_mode;
 
     try {
@@ -446,11 +464,21 @@ class NanoMVC_PDO {
       throw new Exception("PDO Error: {$e->getMessage()} | Query: $query");
     }
 
-    return match ($return_type) {
-      NMVC_SQL_INIT => $this->result->fetch(),
-      NMVC_SQL_ALL  => $this->result->fetchAll(),
-      default       => true
-    };
+    if (in_array($return_type, [NMVC_SQL_INIT, NMVC_SQL_ALL], true)) {
+      $res = [];
+      if ($return_type === NMVC_SQL_INIT) {
+        $res = $this->result->fetch();
+        $this->num_rows = $res ? 1 : 0;
+      } else {
+        $res = $this->result->fetchAll();
+        $this->num_rows = count($res);
+      }
+    }
+
+    $this->last_query = $query;
+    $this->last_params = $params;
+
+    return isset($res) ? $res : true;
   }
 
 	/**
@@ -474,14 +502,17 @@ class NanoMVC_PDO {
 
     foreach ($columns as $name => $value) {
       if ($name === '') continue;
-      $fields[] = "`{$name}`=?";
+      $fields[] = $this->quoting . $name . $this->quoting . ' = ?';
       $params[] = $value;
     }
 
     $query_parts = [
-      "UPDATE `{$table}` SET",
+      'UPDATE ' . $this->quoting . $table . $this->quoting . ' SET',
       implode(', ', $fields)
     ];
+
+    $where_sql = '';
+    $where_params = [];
 
     if ($this->_assemble_where($where_sql, $where_params)) {
       $query_parts[] = $where_sql;
@@ -514,7 +545,7 @@ class NanoMVC_PDO {
     $placeholders = array_fill(0, count($columns), '?');
     $params = array_values($columns);
 
-    $query = sprintf("INSERT INTO `%s` (`%s`) VALUES (%s)", $table, implode('`,`', $names), implode(',', $placeholders));
+    $query = sprintf('INSERT INTO ' . $this->quoting . '%s' . $this->quoting . '('. $this->quoting . '%s' . $this->quoting . ') VALUES (%s)', $table, implode($this->quoting . ',' . $this->quoting, $names), implode(',', $placeholders));
 
     $this->_query($query, $params);
     return $this->last_insert_id();
@@ -533,8 +564,11 @@ class NanoMVC_PDO {
   public function delete(string $table): bool {
     if (empty($table)) throw new Exception("Unable to delete, table name required");
 
-    $query = ["DELETE FROM `{$table}`"];
+    $query = ['DELETE FROM ' . $this->quoting . $table . $this->quoting];
     $params = [];
+
+    $where_sql = '';
+    $where_params = [];
 
     if ($this->_assemble_where($where_sql, $where_params)) {
       $query[] = $where_sql;
@@ -557,43 +591,39 @@ class NanoMVC_PDO {
    */
   public function next(?int $fetch_mode = null): mixed {
     if ($fetch_mode !== null) $this->result->setFetchMode($fetch_mode);
-    return $this->result->fetch();
+    $res = $this->result->fetch();
+    if ($res) $this->num_rows++;
+    return $res;
   }
 
   /**
-   * last_insert_id
-   *
    * Get the last inserted ID
    *
    * @access public
-   * @return string
+   * @return int|null
    */
-  public function last_insert_id(): string {
-    return $this->pdo->lastInsertId();
+  public function last_insert_id(): int|null {
+    return (int) $this->pdo->lastInsertId() ?: null;
   }
 
   /**
-   * num_rows
-   *
-   * Get the number of rows returned from previous select
+   * Get the number of rows returned by the previous SELECT query
    *
    * @access public
-   * @return int
+   * @return int|null
    */
-  public function num_rows(): int {
-    return $this->result->rowCount();
+  public function num_rows(): int|null {
+    return $this->num_rows;
   }
 
   /**
-   * affected_rows
-   *
-   * Get the number of affected rows from previous insert/update/delete
+   * Get the number of affected rows from the previous INSERT/UPDATE/DELETE
    *
    * @access public
-   * @return int
+   * @return int|null
    */
-  public function affected_rows(): int {
-    return $this->result->rowCount();
+  public function affected_rows(): int|null {
+    return $this->result?->rowCount() ?? null;
   }
 
   /**
@@ -604,8 +634,27 @@ class NanoMVC_PDO {
    * @access public
    * @return string|null
    */
-  public function last_query(): ?string {
-    return $this->last_query;
+  public function last_query(bool $show_params = false): ?string {
+    if ($show_params === false) return $this->last_query;
+
+    $query = $this->last_query;
+
+    foreach ($this->last_params as $param) {
+      if (is_null($param)) $replacement = 'NULL';
+      elseif (is_bool($param)) $replacement = $param ? 'TRUE' : 'FALSE';
+      elseif (is_numeric($param)) $replacement = $param;
+      else $replacement = $this->pdo->quote($param);
+
+      $query = preg_replace('/\?/', $replacement, $query, 1);
+    }
+
+    return $query;
+  }
+
+  private function _set_whereclause(?string &$clause) {
+    if (!preg_match('/\?\s*$/', $clause)) $clause .= '?';
+
+    if (!preg_match('/(?:[=<>]|!=|<>)\s*\?\s*$/', $clause)) $clause = preg_replace('/\s*\?\s*$/', ' = ?', $clause);
   }
 
   /**

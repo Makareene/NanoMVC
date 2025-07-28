@@ -1,10 +1,38 @@
+1.0.2 (NanoMVC)
+---------------
+* Core system moved into a separate file: `NanoMVCCore.php`, introducing the new base class `nmvc_core`.
+  The original `NanoMVC.php` now simply loads this new class and extends it via `class nmvc extends nmvc_core {}`.
+  This allows for safer and cleaner core customization.
+
+* Controllers are now **case-insensitive** when called from the browser.
+  Controller file names must be lowercase, but the original casing used in the URL is preserved and can be accessed
+  within the controller via `$this->_get_controller()` and within methods via `$this->_get_action()`.
+
+* Autoloader: Added support for passing model parameters via the config file.
+
+* Various minor bug fixes.
+
+* Welcome view template has been redesigned to match the updated NanoMVC identity.
+
+* Controller plugin:
+  - Added two new methods to retrieve the original controller and action names as requested in the browser.
+
+* PDO plugin:
+  - Added **PostgreSQL** support.
+  - Added support for `port` and `schema` configuration options (for PostgreSQL).
+  - Rewritten `num_rows()` and `last_query()` methods.
+    `last_query()` now shows the actual SQL query with substituted parameters.
+  - Various small bug fixes.
+
+* NanoMVC now has an official website and documentation:
+  https://nanomvc.nipaa.fyi
+
 1.0.1 (NanoMVC)
 ---------------
-Raplaced tiny to nano
-Rewrited some code
+* Raplaced tiny to nano
+* Rewrited some code
 
 1.0 (NanoMVC)
 ---------------
-
 * Forked from TinyMVC 1.2.4-dev
 * See original changelog here: https://github.com/mohrt/tinymvc-php

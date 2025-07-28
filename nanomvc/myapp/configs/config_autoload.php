@@ -16,4 +16,7 @@ $config['libraries'] = [];
 // Auto-loaded scripts
 $config['scripts'] = [];
 
+// Auto-loaded models
+$config['models'] = [];
+
 ?>
