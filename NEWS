@@ -1,3 +1,42 @@
+1.0.3 (NanoMVC)
+---------------
+* Overhauled error handler:
+  - Added support for defining a custom error handler class via the config (previously declared but unsupported).
+  - Errors now use view files for display, making them customizable.
+  - HTML error codes (e.g., 404, 500) are now supported with proper HTTP headers sent automatically.
+  - Special view introduced for 404 errors.
+  - Supported codes:
+    400 => 'Bad Request'
+    401 => 'Unauthorized'
+    403 => 'Forbidden'
+    404 => 'Not Found'
+    405 => 'Method Not Allowed'
+    408 => 'Request Timeout'
+    410 => 'Gone'
+    429 => 'Too Many Requests'
+    500 => 'Internal Server Error'
+    501 => 'Not Implemented'
+    502 => 'Bad Gateway'
+    503 => 'Service Unavailable'
+    504 => 'Gateway Timeout'
+  - Display of errors now respects `error_reporting()` and `ini_set('display_errors', '0')` based on severity.
+  - If a controller or method is missing, a 404 code is now correctly returned.
+  - Default error code is 500 if none specified.
+  - Many small enhancements and refinements.
+
+* Plugin `NanoMVC_Library_URI`:
+  - Fixed and improved.
+  - Added `uri()` method that returns the URI tail from a given segment as string.
+
+* Plugin `NanoMVC_Script_Helper`:
+  - Extended with `send_headers()` and `esc_html()` methods for safer header and output handling.
+
+* Added plugin `NanoMVC_Library_BlogMenu`:
+  - Enables building simple blogs using only controllers and methods with structured metadata.
+  - No need for database or external storage — all content is stored in code.
+
+* Other minor improvements and internal refactorings.
+
 1.0.2 (NanoMVC)
 ---------------
 * Core system moved into a separate file: `NanoMVCCore.php`, introducing the new base class `nmvc_core`.

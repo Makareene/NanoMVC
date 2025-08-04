@@ -105,7 +105,7 @@ class NanoMVC_View {
     extract($this->view_vars);
     if (isset($view_vars)) extract($view_vars);
     try {
-      include($_nmvc_filepath);
+      include $_nmvc_filepath;
     } catch (Exception $e) {
       throw new Exception("Unknown file '$_nmvc_filepath'");
     }

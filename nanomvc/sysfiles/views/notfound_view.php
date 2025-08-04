@@ -3,9 +3,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>NanoMVC Error</title>
+    <title>NanoMVC Not Found</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="An unexpected error occurred while processing your request.">
+    <meta name="description" content="The requested resource was not found on this server.">
     <style>
     body {
       font-family: system-ui, sans-serif;
@@ -14,17 +14,17 @@
     }
     h1 {
       font-size: 1.5em;
-      color: #600;
+      color: #b35900;
       margin-bottom: 1em;
     }
     </style>
   </head>
   <body>
-    <h1>NanoMVC Error</h1>
+    <h1>NanoMVC Not Found</h1>
 <?php endif?>
 
-    <div style="display: block; margin: 1em 0; padding: .33em 6px; background-color: #fcc; border: 1px solid #600; color: #600; text-align: left">
-      <b>Error:</b> <?=htmlspecialchars($code_val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?>
+    <div style="display: block; margin: 1em 0; padding: .33em 6px; background-color: #fff3cd; border: 1px solid #ffb84d; color: #7a4d00; text-align: left">
+      <b>Type:</b> <?=htmlspecialchars($code_val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?>
       <?php if($show_error):?>
       <br><b>Message:</b> <?=htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?><br>
       <b>File:</b> <?=htmlspecialchars($file, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?><br>

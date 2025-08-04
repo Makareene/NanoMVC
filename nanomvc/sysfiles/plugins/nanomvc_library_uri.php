@@ -43,8 +43,8 @@ class NanoMVC_Library_URI {
    * @param int $index
    * @return string|false
    */
-  public function segment(int $index): string|false {
-    return !empty($this->path[$index - 1]) ? $this->path[$index - 1] : false;
+  public function segment(int $index = 1): string|false {
+    return isset($this->path[$index]) ? $this->path[$index] : false;
   }
 
   /**
@@ -54,10 +54,10 @@ class NanoMVC_Library_URI {
    * @param int $index
    * @return array
    */
-  public function uri_to_assoc(int $index): array {
+  public function uri_to_assoc(int $index = 1): array {
     $assoc = [];
 
-    for ($x = count($this->path), $y = $index - 1; $y < $x; $y += 2) {
+    for ($x = count($this->path), $y = $index; $y <= $x; $y += 2) {
       $key = $this->path[$y];
       $assoc[$key] = $this->path[$y + 1] ?? null;
     }
@@ -72,9 +72,15 @@ class NanoMVC_Library_URI {
    * @param int $index
    * @return array|false
    */
-  public function uri_to_array(int $index = 0): array|false {
-    return is_array($this->path) ? array_slice($this->path, $index) : false;
+  public function uri_to_array(int $index = 1): array|false {
+    return is_array($this->path) ? array_slice($this->path, $index - 1) : false;
   }
+
+  public function uri(int $index = 1): ?string {
+    $path = $this->uri_to_array($index);
+    return is_array($path) ? implode('/', $path) : null;
+  }
+
 }
 
 ?>

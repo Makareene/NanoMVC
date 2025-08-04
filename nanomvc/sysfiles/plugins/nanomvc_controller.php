@@ -32,7 +32,7 @@ class NanoMVC_Controller {
     nmvc::instance($this, 'controller'); // save controller instance
 
     $this->load = new NanoMVC_Load; // instantiate load library
-    $this->view = new NanoMVC_View; // instantiate view library
+    $this->view = &nmvc::instance()->view;
   }
 
   /**
@@ -54,14 +54,14 @@ class NanoMVC_Controller {
    * @param array $args
    */
   public function __call(string $function, array $args): void {
-    throw new Exception("Unknown controller method '{$function}'");
+    throw new Exception("Unknown controller method '{$function}'", 404);
   }
 
   public final function _set_action($name): void {
     $this->action = $name;
   }
 
-  protected final function _get_action(): string|null {
+  public final function _get_action(): string|null {
     return $this->action;
   }
 
@@ -69,7 +69,7 @@ class NanoMVC_Controller {
     $this->controller = $name;
   }
 
-  protected final function _get_controller(): string|null {
+  public final function _get_controller(): string|null {
     return $this->controller;
   }
 

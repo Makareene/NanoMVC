@@ -32,6 +32,49 @@ It is **not a rewrite**, but a carefully maintained continuation with compatibil
   - Improved `num_rows()` and `last_query()` methods (now includes bound parameters)
 - 🔹 Minor bug fixes and cleanup
 
+---
+
+## 🚀 What’s New in 1.0.3
+
+- 🔹 Overhauled error handler:
+  - Support for defining a custom error handler class via config
+  - Errors now use customizable view templates instead of hardcoded HTML
+  - HTTP error codes now automatically send proper headers
+  - Special view added for 404 errors
+  - Supported status codes:
+    400 → Bad Request
+    401 → Unauthorized
+    403 → Forbidden
+    404 → Not Found
+    405 → Method Not Allowed
+    408 → Request Timeout
+    410 → Gone
+    429 → Too Many Requests
+    500 → Internal Server Error
+    501 → Not Implemented
+    502 → Bad Gateway
+    503 → Service Unavailable
+    504 → Gateway Timeout
+  - Error display now respects `error_reporting()` and `display_errors`
+  - Missing controllers or methods now trigger a 404 response
+  - Default code is 500 if none specified
+
+- 🔹 Plugin `NanoMVC_Library_URI`:
+  - Fixed and improved
+  - Added `uri()` method to get the remaining URI tail as string
+
+- 🔹 Plugin `NanoMVC_Script_Helper`:
+  - Added `send_headers()` for structured header sending
+  - Added `esc_html()` for safe HTML escaping
+
+- 🔹 Plugin `NanoMVC_Library_BlogMenu`:
+  - Create simple blogs using only controllers and methods with metadata
+  - No database or external storage required — content lives in code
+
+- 🔹 Other small improvements and internal cleanup
+
+---
+
 🧾 Full changelog is available in [NEWS](./NEWS)
 
 ---

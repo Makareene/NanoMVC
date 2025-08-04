@@ -8,7 +8,7 @@
  * License:    LGPL v2.1 or later (see LICENSE file)
  */
 
-if(!defined('NMVC_VERSION')) define('NMVC_VERSION', '1.0.2');
+if(!defined('NMVC_VERSION')) define('NMVC_VERSION', '1.0.3');
 
 // directory separator alias
 if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
@@ -55,6 +55,7 @@ class nmvc_core{
   public $action = null; // controller method name
   public $path_info = null; // server path_info
   public $url_segments = null; // array of url path_info segments
+  public NanoMVC_View $view;
 
   /**
    * Class constructor
@@ -64,6 +65,11 @@ class nmvc_core{
    */
   public function __construct(string $id = 'default') {
     self::instance($this, $id); // set instance
+
+    self::timer('nmvc_app_start'); // set initial timer
+
+    $this->view = new NanoMVC_View; // instantiate view library
+
   }
 
   /**
@@ -72,15 +78,13 @@ class nmvc_core{
    * @access public
    */
   public function main(): void {
-    self::timer('nmvc_app_start'); // set initial timer
-
     $this->path_info = !empty($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/'; // set path_info
-
-    $this->setupErrorHandling(); // internal error handling
 
     /* include application config */
     include 'config_application.php';
     $this->config = $config;
+
+    $this->setupErrorHandling(); // internal error handling
 
     $this->setupRouting(); // url remapping/routing
 
@@ -112,10 +116,11 @@ class nmvc_core{
    */
   public function setupErrorHandling(): void {
     if (defined('NMVC_ERROR_HANDLING') && NMVC_ERROR_HANDLING == 1) {
-      /* catch all uncaught exceptions */
-      set_exception_handler(['NanoMVC_ExceptionHandler', 'handleException']);
-      require_once 'nanomvc_errorhandler.php';
-      set_error_handler('NanoMVC_ErrorHandler');
+      /* Catch all uncaught exceptions */
+      $error_handler_class = !empty($this->config['error_handler_class']) ? $this->config['error_handler_class'] : 'NanoMVC_ErrorHandler';
+      if (!class_exists($error_handler_class)) throw new Exception("Fatal error: Error handler class '{$error_handler_class}' not found.");
+      set_exception_handler([$error_handler_class, 'handleException']);
+      set_error_handler([$error_handler_class, 'handleError']);
     }
   }
 
@@ -157,7 +162,7 @@ class nmvc_core{
         $controller_name = (!empty($this->config['default_controller']) ? $this->config['default_controller'] : 'default'); // get from url if present, else use default
       else $controller_name = $this->url_segments[1];
 
-      if (preg_match('!\W!', $controller_name)) throw new Exception('Only word characters (letters, digits, and underscores) are allowed for the controller name');
+      if (preg_match('!\W!', $controller_name)) throw new Exception('Only word characters (letters, digits, and underscores) are allowed for the controller name', 404);
 
       $controller_file = "{$controller_name}.php";
 
@@ -166,15 +171,15 @@ class nmvc_core{
     $controller_file = strtolower($controller_file);
 
     /* if no controller, throw an exception */
-    if (!stream_resolve_include_path($controller_file)) throw new Exception("Controller '{$controller_name}' was not found");
+    if (!stream_resolve_include_path($controller_file)) throw new Exception("Controller '{$controller_name}' was not found", 404);
 
     include $controller_file;
 
     $controller_class = $controller_name . '_Controller'; // see if controller class exists
 
-    if(!class_exists($controller_class)) throw new Exception("Controller class '$controller_class' was not found.");
+    if(!class_exists($controller_class)) throw new Exception("Controller class '$controller_class' was not found.", 404);
 
-    $this->controller = new $controller_class(true); // instantiate the controller
+    $this->controller = new $controller_class(); // instantiate the controller
 
     $this->controller->_set_controller($controller_name); // save controller name
 
@@ -192,9 +197,9 @@ class nmvc_core{
       $this->action = isset($this->url_segments[2]) ? $this->url_segments[2] :
         (!empty($this->config['default_action']) ? $this->config['default_action'] : 'index'); // get from url if present, else use default
 
-      if (substr($this->action, 0, 1) == '_') throw new Exception("Action name is not allowed '{$this->action}'"); // cannot call method names starting with _
+      if (substr($this->action, 0, 1) == '_') throw new Exception("Action name is not allowed '{$this->action}'", 404); // cannot call method names starting with _
 
-      if (preg_match('!\W!', $this->action)) throw new Exception('Only word characters (letters, digits, and underscores) are allowed for the action name');
+      if (preg_match('!\W!', $this->action)) throw new Exception('Only word characters (letters, digits, and underscores) are allowed for the action name', 404);
 
     }
 
