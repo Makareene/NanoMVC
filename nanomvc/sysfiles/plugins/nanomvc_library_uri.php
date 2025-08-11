@@ -81,6 +81,34 @@ class NanoMVC_Library_URI {
     return is_array($path) ? implode('/', $path) : null;
   }
 
+  function parse_query_string(string $query = ''): array {
+    $result = [];
+    if ($query === '') return $result;
+
+    $pairs = explode('&', $query);
+
+    foreach ($pairs as $pair) {
+      if ($pair === '') {
+        // Empty pair, key = null, val = null
+        $result[] = ['key' => null, 'val' => null];
+        continue;
+      }
+
+      $parts = explode('=', $pair);
+
+      // key is first part or null if empty string
+      $key = ($parts[0] === '') ? null : $parts[0];
+
+      // If more than 1 part, implode all parts after first into val
+      if (sizeof($parts) > 1) $val = implode('=', array_slice($parts, 1));
+      else $val = null;
+
+      $result[] = ['key' => $key, 'val' => $val];
+    }
+
+    return $result;
+  }
+
 }
 
 ?>

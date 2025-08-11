@@ -46,7 +46,7 @@ class NanoMVC_Library_BlogMenu {
         $categories[$filename] = [];
 
         $handle = fopen($file, 'r');
-        if ($handle === false) throw new Exception("Can't open the Controller '{$filename}'");
+        if ($handle === false) throw new Exception("Can't open the Controller '{$filename}'", 500);
         $first_line = fgets($handle);
         fclose($handle);
         //echo $first_line;
@@ -59,12 +59,12 @@ class NanoMVC_Library_BlogMenu {
           $json = json_decode($regexp['res'], false, 512, JSON_THROW_ON_ERROR);
           if (isset($json->name, $json->created)) {
             $dt = DateTime::createFromFormat($this->format, $json->created);
-            if (!($dt && $dt->format($this->format) === $json->created)) throw new Exception("Date created in the controller '{$filename}' is incorrect");
+            if (!($dt && $dt->format($this->format) === $json->created)) throw new Exception("Date created in the controller '{$filename}' is incorrect", 500);
             foreach ($json as $key => $value) $categories[$filename][$key] = $value;
             $categories[$filename]['_link'] = '/' . $filename;
           } else continue;
         } catch (Throwable $e) {
-          throw new Exception("Invalid JSON metadata in the controller '{$filename}': " . $e->getMessage());
+          throw new Exception("Invalid JSON metadata in the controller '{$filename}': " . $e->getMessage(), 500);
         }
 
       }
@@ -79,15 +79,28 @@ class NanoMVC_Library_BlogMenu {
     return $categories;
   }
 
-  public function get_articles(?string $action = null, string $order = 'created desc'): array {
+  public function get_articles(?string $action = null, string $order = 'created desc', ?string $controller_name = null, ?string $act = null): array {
     $articles = [];
 
-    $controller = nmvc::instance(null, 'controller'); // get controller instance
+    if ($controller_name) {
+      $file = null;
+      if (is_file($this->controller_paths['myapp'] . $controller_name . '.php'))
+        $file = $this->controller_paths['myapp'] . $controller_name . '.php';
+      elseif (is_file($this->controller_paths['myfiles'] . $controller_name . '.php'))
+        $file = $this->controller_paths['myfiles'] . $controller_name . '.php';
+
+      if ($file) {
+        include_once $file;
+        $controller_name .= '_Controller';
+        $controller = new $controller_name($controller_name, $act ? $act : 'index');
+      } else throw new Exception("Controller '{$controller_name}' was not found", 500);
+
+    } else $controller = nmvc::instance(null, 'controller'); // get controller instance
+
+    $name = $controller->_get_controller();
     $methods = get_class_methods($controller);
     $class = new ReflectionClass($controller);
     $methods = $action !== null ? [$action] : get_class_methods($controller);
-
-    $controller_name = $controller->_get_controller();
 
     foreach ($methods as $method) {
       if (str_starts_with($method, '_')) continue;
@@ -108,14 +121,14 @@ class NanoMVC_Library_BlogMenu {
           $meta = json_decode($json, false, 512, JSON_THROW_ON_ERROR);
           if (isset($meta->name, $meta->created)) {
             $dt = DateTime::createFromFormat($this->format, $meta->created);
-            if (!($dt && $dt->format($this->format) === $meta->created)) throw new Exception("Invalid date format");
+            if (!($dt && $dt->format($this->format) === $meta->created)) throw new Exception('Invalid date format', 500);
 
             foreach ($meta as $key => $value) $articles[$method][$key] = $value;
-            $articles[$method]['_link'] = '/' . $controller_name . '/' . $method;
+            $articles[$method]['_link'] = '/' . $name . '/' . $method;
           } else continue;
 
         } catch (Throwable $e) {
-          throw new Exception("Invalid blog metadata in method '{$method}': " . $e->getMessage());
+          throw new Exception("Invalid blog metadata in method '{$name} > {$method}': " . $e->getMessage(), 500);
         }
       }
     }
@@ -143,7 +156,7 @@ class NanoMVC_Library_BlogMenu {
     });
   }
 
-  public function get_nav(&$items, $current): array {
+  public function get_nav(array &$items, string|int $current): array {
     $res = ['pre' => [], 'next' => []];
     $keys = array_keys($items);
     $idx = array_search($current, $keys, true);
@@ -155,6 +168,18 @@ class NanoMVC_Library_BlogMenu {
       $res['next'] = $items[$keys[$idx + 1]];
 
     return $res;
+  }
+
+  public function pagination(array &$items, int $limit = 1): int|bool {
+    $limit = abs($limit);
+    if ($limit === 0) return false;
+    $cur_page = 0;
+    foreach ($items as &$item) {
+      $cur_page++;
+      $item['_page'] = ceil($cur_page / $limit);
+    }
+    unset($item);
+    return ceil($cur_page / $limit); //max page
   }
 
 }

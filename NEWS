@@ -1,3 +1,34 @@
+1.0.4 (NanoMVC)
+---------------
+* Core:
+  - Controllers now receive optional `$controller_name` and `$action_name` parameters in their constructors.
+    Previously, these values were set later, making them unavailable inside custom constructors.
+  - Error codes are now passed as the second parameter in all exceptions.
+  - HTTP 410 errors now use the same view as HTTP 404 for consistency.
+  - If an error code is `0` (default/undefined), it now bypasses `error_reporting` checks and will display
+    when error display is enabled.
+
+* Plugin `NanoMVC_Library_BlogMenu`:
+  - `get_articles()` now accepts new two optional parameters: `?string $controller_name = null` and
+    `?string $act = null` to fetch a new controller instance and its articles.
+  - Added `pagination(array &$items, int $limit = 1)` method to build pagination and add a `_page`
+    index to each article based on `$limit`. This method should be given the full article list.
+
+* Plugin `NanoMVC_Library_URI`:
+  - Added `parse_query_string()` method to parse a query string (e.g. `$_SERVER['QUERY_STRING']`)
+    into a multidimensional array of keys and values.
+
+* Plugin `NanoMVC_Script_Helper`:
+  - Added `view()` method to render another view from within a view.
+    Example: `<?php NanoMVC_Script_Helper::view('another_view', $vars) ?>`
+    Parameters are the same as `display()` inside a controller.
+  - Added `is_int_like()` method to check if a string is a decimal integer (with optional minus sign).
+
+* Other improvements:
+  - Enhanced error reporting in view rendering to show the reason why a view failed.
+  - In system views (`error` and `notfound`), string escaping now uses `NanoMVC_Script_Helper::esc_html`
+    instead of manual PHP built-in escaping.
+
 1.0.3 (NanoMVC)
 ---------------
 * Overhauled error handler:

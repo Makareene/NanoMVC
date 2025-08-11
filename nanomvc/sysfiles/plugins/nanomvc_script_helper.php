@@ -106,6 +106,26 @@ class NanoMVC_Script_Helper
     return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
   }
 
+  public static function view(string $_nmvc_filename, ?array $view_vars = null): void {
+    (new NanoMVC_View)->display($_nmvc_filename, $view_vars);
+  }
+
+  function is_int_like(mixed $value): bool {
+    if (!is_string($value) && !is_int($value)) return false;
+
+    $str = (string)$value;
+
+    if ($str === '') return false;
+
+    // Allow single leading minus
+    if ($str[0] === '-') $str = substr($str, 1);
+
+    // Empty string after removing "-" → not valid
+    if ($str === '') return false;
+
+    return ctype_digit($str);
+  }
+
 }
 
 ?>

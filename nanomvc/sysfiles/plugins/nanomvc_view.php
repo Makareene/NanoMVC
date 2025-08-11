@@ -107,7 +107,7 @@ class NanoMVC_View {
     try {
       include $_nmvc_filepath;
     } catch (Exception $e) {
-      throw new Exception("Unknown file '$_nmvc_filepath'");
+      throw new Exception("Trying to include view '$_nmvc_filepath': " . $e->getMessage(), 500);
     }
   }
 }

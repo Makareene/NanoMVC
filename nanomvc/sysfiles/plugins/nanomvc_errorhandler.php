@@ -41,6 +41,7 @@ class NanoMVC_ErrorHandler extends ErrorException {
    * @return void
    */
   public static function handleException(Throwable $e): void {
+    // print_r($e);die;
     if (!headers_sent())
       while (ob_get_level() > 0) ob_end_clean(); // clean the all buffer
 
@@ -52,18 +53,18 @@ class NanoMVC_ErrorHandler extends ErrorException {
     $file     = $e->getFile();
     $line     = $e->getLine();
 
-    $view = ($code === 404) ? 'notfound_view' : 'error_view';
+    $view = (in_array($code, [404, 410], true)) ? 'notfound_view' : 'error_view';
 
     $statuses = self::_get_statuses();
 
-    nmvc::instance()->view->display($view, [
+    nmvc::instance()->view->sysview($view, [
       'code'       => $code,
       'code_val'   => $code_val,
       'message'    => $message,
       'file'       => $file,
       'line'       => $line,
       'outputed'   => headers_sent() ? 1 : 0,
-      'show_error' => ini_get('display_errors') === '1' && (isset($statuses[$code]) || (error_reporting() & $code))
+      'show_error' => ini_get('display_errors') === '1' && (isset($statuses[$code]) || $code === 0 || (error_reporting() & $code))
     ]);
   }
 

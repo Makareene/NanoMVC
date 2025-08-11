@@ -28,11 +28,13 @@ class NanoMVC_Controller {
    *
    * @access public
    */
-  public function __construct() {
+  public function __construct(?string $controller_name = null, ?string $action = null) {
     nmvc::instance($this, 'controller'); // save controller instance
 
     $this->load = new NanoMVC_Load; // instantiate load library
     $this->view = &nmvc::instance()->view;
+    if($controller_name) $this->_set_controller($controller_name); // save controller name
+    if($action) $this->_set_action($action); // save action name
   }
 
   /**

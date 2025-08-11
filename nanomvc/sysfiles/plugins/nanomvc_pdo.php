@@ -64,9 +64,9 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   public function __construct(array $config) {
-    if (!class_exists('PDO', false)) throw new Exception('PHP PDO extension is required.');
+    if (!class_exists('PDO', false)) throw new Exception('PHP PDO extension is required.', 500);
 
-    if (empty($config)) throw new Exception('Database configuration is required.');
+    if (empty($config)) throw new Exception('Database configuration is required.', 500);
 
     $type = strtolower($config['type'] ?? '');
     $charset = $config['charset'] ?? (in_array($type, ['mysql', 'mariadb']) ? 'utf8mb4' : ($type === 'pgsql' ? 'UTF8' : null));
@@ -94,7 +94,7 @@ class NanoMVC_PDO {
       $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     } catch (PDOException $e) {
-      throw new Exception(sprintf("Can't connect to PDO database '%s'. Error: %s", $type, $e->getMessage()));
+      throw new Exception(sprintf("Can't connect to PDO database '%s'. Error: %s", $type, $e->getMessage()), 500);
     }
 
     $this->driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
@@ -175,12 +175,12 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   private function _where(string $clause, array $args = [], string $prefix = 'AND'): array {
-    if (empty($clause)) throw new Exception("WHERE clause cannot be empty");
+    if (empty($clause)) throw new Exception('WHERE clause cannot be empty', 500);
 
     $placeholders = substr_count($clause, '?');
 
     if ($placeholders > 0 && count($args) !== $placeholders)
-      throw new Exception("Mismatched placeholders in WHERE clause: '{$clause}'");
+      throw new Exception("Mismatched placeholders in WHERE clause: '{$clause}'", 500);
 
     $entry = ['clause' => $clause, 'args' => $args, 'prefix' => $prefix];
 
@@ -313,7 +313,7 @@ class NanoMVC_PDO {
    * @return void
    */
   private function _set_clause(string $type, string $clause, array $args = []): void {
-    if ($type === '' || $clause === '') throw new Exception("Clause type or value cannot be empty");
+    if ($type === '' || $clause === '') throw new Exception('Clause type or value cannot be empty', 500);
 
     $this->query_params[$type] = ['clause' => $clause];
 
@@ -332,7 +332,7 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   private function _query_assemble(array &$params = [], ?int $fetch_mode = null): string {
-    if (empty($this->query_params['from'])) throw new Exception("FROM clause is required. Call from() before get().");
+    if (empty($this->query_params['from'])) throw new Exception('FROM clause is required. Call from() before get().', 500);
 
     $parts = [];
     $parts[] = "SELECT {$this->query_params['select']}";
@@ -461,7 +461,7 @@ class NanoMVC_PDO {
       $this->result->execute($params);
       $this->result->setFetchMode($fetch_mode);
     } catch (PDOException $e) {
-      throw new Exception("PDO Error: {$e->getMessage()} | Query: $query");
+      throw new Exception("PDO Error: {$e->getMessage()} | Query: $query", 500);
     }
 
     if (in_array($return_type, [NMVC_SQL_INIT, NMVC_SQL_ALL], true)) {
@@ -493,9 +493,9 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   public function update(string $table, array $columns): bool {
-    if (empty($table)) throw new Exception("Unable to update, table name required");
+    if (empty($table)) throw new Exception('Unable to update, table name required', 500);
 
-    if (empty($columns)) throw new Exception("Unable to update, at least one column required");
+    if (empty($columns)) throw new Exception('Unable to update, at least one column required', 500);
 
     $fields = [];
     $params = [];
@@ -537,9 +537,9 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   public function insert(string $table, array $columns): int {
-    if (empty($table)) throw new Exception("Unable to insert, table name required");
+    if (empty($table)) throw new Exception('Unable to insert, table name required', 500);
 
-    if (empty($columns)) throw new Exception("Unable to insert, at least one column required");
+    if (empty($columns)) throw new Exception('Unable to insert, at least one column required', 500);
 
     $names = array_keys($columns);
     $placeholders = array_fill(0, count($columns), '?');
@@ -562,7 +562,7 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   public function delete(string $table): bool {
-    if (empty($table)) throw new Exception("Unable to delete, table name required");
+    if (empty($table)) throw new Exception('Unable to delete, table name required', 500);
 
     $query = ['DELETE FROM ' . $this->quoting . $table . $this->quoting];
     $params = [];

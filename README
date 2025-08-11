@@ -75,6 +75,16 @@ It is **not a rewrite**, but a carefully maintained continuation with compatibil
 
 ---
 
+## 🚀 What’s New in 1.0.4
+
+- 🔹 Core updates: Controllers now get optional `$controller_name` and `$action_name` in constructors; exceptions include error codes; HTTP 410 uses the 404 view; error code `0` bypasses `error_reporting` checks.
+
+- 🔹 Plugin improvements: `NanoMVC_Library_BlogMenu` adds optional params to `get_articles()` and a `pagination()` method; `NanoMVC_Library_URI` adds `parse_query_string()`; `NanoMVC_Script_Helper` adds `view()` for rendering views and `is_int_like()` for integer string checks.
+
+- 🔹 Other enhancements: Better error reporting in views and consistent string escaping in system error views using `NanoMVC_Script_Helper::esc_html`.
+
+---
+
 🧾 Full changelog is available in [NEWS](./NEWS)
 
 ---

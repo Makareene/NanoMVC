@@ -8,7 +8,7 @@
  * License:    LGPL v2.1 or later (see LICENSE file)
  */
 
-if(!defined('NMVC_VERSION')) define('NMVC_VERSION', '1.0.3');
+if(!defined('NMVC_VERSION')) define('NMVC_VERSION', '1.0.4');
 
 // directory separator alias
 if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
@@ -52,6 +52,7 @@ if ($spl_funcs === false || !in_array('spl_autoload', $spl_funcs, true)) spl_aut
 class nmvc_core{
   public $config = null; // config file values
   public $controller = null; // controller object
+  public $controller_name = null; // controller_name
   public $action = null; // controller method name
   public $path_info = null; // server path_info
   public $url_segments = null; // array of url path_info segments
@@ -90,13 +91,15 @@ class nmvc_core{
 
     $this->setupSegments(); // split path_info into array
 
-    $this->setupController(); // create controller object
+    $controller_class = $this->setupController(); // instantiate the controller
 
     $this->setupAction(); // get controller method
 
     $this->setupAutoloaders(); // run library/script autoloaders
 
     if ($this->config['timer']) ob_start(); // capture output if timing
+
+    $this->controller = new $controller_class($this->controller_name, $this->action); // create controller object
 
     $this->controller->{$this->action}(); // execute controller action
 
@@ -118,7 +121,7 @@ class nmvc_core{
     if (defined('NMVC_ERROR_HANDLING') && NMVC_ERROR_HANDLING == 1) {
       /* Catch all uncaught exceptions */
       $error_handler_class = !empty($this->config['error_handler_class']) ? $this->config['error_handler_class'] : 'NanoMVC_ErrorHandler';
-      if (!class_exists($error_handler_class)) throw new Exception("Fatal error: Error handler class '{$error_handler_class}' not found.");
+      if (!class_exists($error_handler_class)) throw new Exception("Fatal error: Error handler class '{$error_handler_class}' not found.", 1);
       set_exception_handler([$error_handler_class, 'handleException']);
       set_error_handler([$error_handler_class, 'handleError']);
     }
@@ -152,7 +155,7 @@ class nmvc_core{
    *
    * @access public
    */
-  public function setupController(): void {
+  public function setupController(): string {
     /* get controller/method */
     if (!empty($this->config['root_controller'])) {
       $controller_name = $this->config['root_controller'];
@@ -175,13 +178,13 @@ class nmvc_core{
 
     include $controller_file;
 
-    $controller_class = $controller_name . '_Controller'; // see if controller class exists
+    $this->controller_name = $controller_name;
+
+    $controller_class = $this->controller_name . '_Controller'; // see if controller class exists
 
     if(!class_exists($controller_class)) throw new Exception("Controller class '$controller_class' was not found.", 404);
 
-    $this->controller = new $controller_class(); // instantiate the controller
-
-    $this->controller->_set_controller($controller_name); // save controller name
+    return $controller_class;
 
   }
 
@@ -202,8 +205,6 @@ class nmvc_core{
       if (preg_match('!\W!', $this->action)) throw new Exception('Only word characters (letters, digits, and underscores) are allowed for the action name', 404);
 
     }
-
-    $this->controller->_set_action($this->action); // save action name
 
   }
 
@@ -247,7 +248,7 @@ class nmvc_core{
       $instance[$id] = $new_instance;
 
     if (!isset($instance[$id]))
-      throw new RuntimeException("NanoMVC instance with ID '{$id}' is not initialized.");
+      throw new RuntimeException("NanoMVC instance with ID '{$id}' is not initialized.", 500);
 
     return $instance[$id];
   }

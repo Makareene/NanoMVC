@@ -40,11 +40,11 @@ class NanoMVC_Load {
   public function model(string $model_name, ?string $model_alias = null, ?string $filename = null, ?string $pool_name = null): bool {
     $model_alias ??= $model_name; // if no alias, use model name
 
-    if (empty($model_alias)) throw new Exception("Model name cannot be empty");
+    if (empty($model_alias)) throw new Exception('Model name cannot be empty', 500);
 
-    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]+$/', $model_alias)) throw new Exception("Model name '{$model_alias}' is an invalid syntax");
+    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]+$/', $model_alias)) throw new Exception("Model name '{$model_alias}' is an invalid syntax", 500);
 
-    if (method_exists($this, $model_alias)) throw new Exception("Model name '{$model_alias}' is an invalid (reserved) name");
+    if (method_exists($this, $model_alias)) throw new Exception("Model name '{$model_alias}' is an invalid (reserved) name", 500);
 
     $controller = nmvc::instance(null, 'controller'); // get controller instance
 
@@ -69,11 +69,11 @@ class NanoMVC_Load {
   public function library(string $lib_name, ?string $alias = null, ?string $filename = null): bool {
     $alias ??= $lib_name; // use lib name if alias not provided
 
-    if (empty($alias)) throw new Exception("Library name cannot be empty");
+    if (empty($alias)) throw new Exception('Library name cannot be empty', 500);
 
-    if (!preg_match('/^[a-zA-Z][a-zA-Z_]+$/', $alias)) throw new Exception("Library name '{$alias}' is an invalid syntax");
+    if (!preg_match('/^[a-zA-Z][a-zA-Z_]+$/', $alias)) throw new Exception("Library name '{$alias}' is an invalid syntax", 500);
 
-    if (method_exists($this, $alias)) throw new Exception("Library name '{$alias}' is an invalid (reserved) name");
+    if (method_exists($this, $alias)) throw new Exception("Library name '{$alias}' is an invalid (reserved) name", 500);
 
     $controller = nmvc::instance(null, 'controller'); // get controller instance
 
@@ -96,11 +96,11 @@ class NanoMVC_Load {
    * @return bool
    */
   public function script(string $script_name): bool {
-    if (!preg_match('/^[a-zA-Z][a-zA-Z_]+$/', $script_name)) throw new Exception("Invalid script name '{$script_name}'");
+    if (!preg_match('/^[a-zA-Z][a-zA-Z_]+$/', $script_name)) throw new Exception("Invalid script name '{$script_name}'", 500);
 
     $filename = strtolower("NanoMVC_Script_{$script_name}.php");
 
-    if (!@include_once($filename)) throw new Exception("Unknown script file '{$filename}'");
+    if (!@include_once($filename)) throw new Exception("Unknown script file '{$filename}'", 500);
 
     return true;
   }

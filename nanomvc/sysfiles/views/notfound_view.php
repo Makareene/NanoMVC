@@ -24,11 +24,11 @@
 <?php endif?>
 
     <div style="display: block; margin: 1em 0; padding: .33em 6px; background-color: #fff3cd; border: 1px solid #ffb84d; color: #7a4d00; text-align: left">
-      <b>Type:</b> <?=htmlspecialchars($code_val, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?>
+      <b>Type:</b> <?=NanoMVC_Script_Helper::esc_html($code_val)?>
       <?php if($show_error):?>
-      <br><b>Message:</b> <?=htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?><br>
-      <b>File:</b> <?=htmlspecialchars($file, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?><br>
-      <b>Line:</b> <?=htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')?>
+      <br><b>Message:</b> <?=NanoMVC_Script_Helper::esc_html($message)?><br>
+      <b>File:</b> <?=NanoMVC_Script_Helper::esc_html($file)?><br>
+      <b>Line:</b> <?=NanoMVC_Script_Helper::esc_html($line)?>
       <?php endif?>
     </div>
 
