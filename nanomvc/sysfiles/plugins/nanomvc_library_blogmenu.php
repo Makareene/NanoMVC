@@ -91,13 +91,15 @@ class NanoMVC_Library_BlogMenu {
 
       if ($file) {
         include_once $file;
+        $name = $controller_name;
         $controller_name .= '_Controller';
-        $controller = new $controller_name($controller_name, $act ? $act : 'index');
+        $controller = new $controller_name($name, $act ? $act : 'index');
       } else throw new Exception("Controller '{$controller_name}' was not found", 500);
 
     } else $controller = nmvc::instance(null, 'controller'); // get controller instance
 
     $name = $controller->_get_controller();
+
     $methods = get_class_methods($controller);
     $class = new ReflectionClass($controller);
     $methods = $action !== null ? [$action] : get_class_methods($controller);
