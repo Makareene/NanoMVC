@@ -18,22 +18,6 @@ It is **not a rewrite**, but a carefully maintained continuation with compatibil
 
 ---
 
-## 🚀 What’s New in 1.0.2
-
-- 🔹 Core system moved into a separate file: `NanoMVCCore.php`, introducing the new base class `nmvc_core`
-- 🔹 `NanoMVC.php` now simply extends it via `class nmvc extends nmvc_core {}` — allows safe customization
-- 🔹 **Case-insensitive routing**: Controller names in URLs are no longer case-sensitive
-- 🔹 Access original URL casing inside controllers:
-  `$this->_get_controller()` and `$this->_get_action()`
-- 🔹 Autoloaded models now support parameters via config
-- 🔹 Redesigned welcome view template
-- 🔹 **PostgreSQL support** in the PDO plugin
-  - Includes support for `port` and `schema` options
-  - Improved `num_rows()` and `last_query()` methods (now includes bound parameters)
-- 🔹 Minor bug fixes and cleanup
-
----
-
 ## 🚀 What’s New in 1.0.3
 
 - 🔹 Overhauled error handler:
@@ -82,6 +66,19 @@ It is **not a rewrite**, but a carefully maintained continuation with compatibil
 - 🔹 Plugin improvements: `NanoMVC_Library_BlogMenu` adds optional params to `get_articles()` and a `pagination()` method; `NanoMVC_Library_URI` adds `parse_query_string()`; `NanoMVC_Script_Helper` adds `view()` for rendering views and `is_int_like()` for integer string checks.
 
 - 🔹 Other enhancements: Better error reporting in views and consistent string escaping in system error views using `NanoMVC_Script_Helper::esc_html`.
+
+---
+
+## 🚀 What’s New in 1.0.5
+
+- 🔹 Core:
+  - PDO: Added support for null parameters in WHERE clauses, generating WHERE param IS NULL when needed.
+  - Fixed a bug in the declaration of is_int_like(), made it a static method.
+  - Introduced is_ajax_json GET flag and new json_view for error handling. When is_ajax_json is present, json_view is used and the header Content-Type: application/json is sent. Integrated into core error handler.
+  - Removed htmlspecialchars from JSON error view to ensure valid JSON output.
+
+- 🔹 Other improvements:
+  - Minor fixes related to error handling and JSON responses.
 
 ---
 

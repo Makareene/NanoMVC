@@ -1,3 +1,15 @@
+1.0.5 (NanoMVC)
+---------------
+
+* Core:
+  - PDO: Added support for null parameters in WHERE clauses, generating WHERE param IS NULL when needed.
+  - Fixed a bug in the declaration of is_int_like(), made it a static method.
+  - Introduced is_ajax_json GET flag and new json_view for error handling. When is_ajax_json is present, json_view is used and the header Content-Type: application/json is sent. Integrated into core error handler.
+  - Removed htmlspecialchars from JSON error view to ensure valid JSON output.
+
+* Other improvements:
+  - Minor fixes related to error handling and JSON responses.
+
 1.0.4 (NanoMVC)
 ---------------
 * Core:
