@@ -8,7 +8,7 @@
  * License:    LGPL v2.1 or later (see LICENSE file)
  */
 
-if(!defined('NMVC_VERSION')) define('NMVC_VERSION', '1.0.4');
+if(!defined('NMVC_VERSION')) define('NMVC_VERSION', '1.0.5');
 
 // directory separator alias
 if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);

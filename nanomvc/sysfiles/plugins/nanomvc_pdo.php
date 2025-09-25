@@ -141,9 +141,9 @@ class NanoMVC_PDO {
    * @throws Exception
    */
   public function where(string $clause, array|string|int|float|null $args): void {
-    $this->_set_whereclause($clause);
+    $this->_set_whereclause($clause, $args);
 
-    $this->_where($clause, (array) $args, 'AND');
+    $this->_where($clause, (array)$args, 'AND');
   }
 
   /**
@@ -157,9 +157,9 @@ class NanoMVC_PDO {
    * @return void
    */
   public function orwhere(string $clause, array|string|int|float|null $args): void {
-    $this->_set_whereclause($clause);
+    $this->_set_whereclause($clause, $args);
 
-    $this->_where($clause, (array) $args, 'OR');
+    $this->_where($clause, (array)$args, 'OR');
   }
   
 	/**
@@ -651,10 +651,13 @@ class NanoMVC_PDO {
     return $query;
   }
 
-  private function _set_whereclause(?string &$clause) {
-    if (!preg_match('/\?\s*$/', $clause)) $clause .= '?';
+  private function _set_whereclause(?string &$clause, array|string|int|float|null $args) {
+    if ($args === null) $clause = (trim($clause) . ' IS NULL');
+    else {
+      if (!preg_match('/\?\s*$/', $clause)) $clause .= '?';
 
-    if (!preg_match('/(?:[=<>]|!=|<>)\s*\?\s*$/', $clause)) $clause = preg_replace('/\s*\?\s*$/', ' = ?', $clause);
+      if (!preg_match('/(?:[=<>]|!=|<>)\s*\?\s*$/', $clause)) $clause = preg_replace('/\s*\?\s*$/', ' = ?', $clause);
+    }
   }
 
   /**

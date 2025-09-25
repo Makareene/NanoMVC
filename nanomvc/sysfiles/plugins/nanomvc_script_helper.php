@@ -110,7 +110,7 @@ class NanoMVC_Script_Helper
     (new NanoMVC_View)->display($_nmvc_filename, $view_vars);
   }
 
-  function is_int_like(mixed $value): bool {
+  public static function is_int_like(mixed $value): bool {
     if (!is_string($value) && !is_int($value)) return false;
 
     $str = (string)$value;

@@ -53,9 +53,11 @@ class NanoMVC_ErrorHandler extends ErrorException {
     $file     = $e->getFile();
     $line     = $e->getLine();
 
-    $view = (in_array($code, [404, 410], true)) ? 'notfound_view' : 'error_view';
+    $view = !isset($_GET['is_ajax_json']) ? ((in_array($code, [404, 410], true)) ? 'notfound_view' : 'error_view') : 'json_view';
 
     $statuses = self::_get_statuses();
+
+    if($view == 'json_view') header('Content-Type: application/json');
 
     nmvc::instance()->view->sysview($view, [
       'code'       => $code,
