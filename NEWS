@@ -1,3 +1,15 @@
+1.0.6 (NanoMVC)
+---------------
+
+* Core:
+  - Loader: Added property_exists() validation before loading a model into a controller property.
+  - Loader: Improved model loading safety by requiring the target controller property to be explicitly declared.
+  - Fixed model loading inside a controller constructor by using the controller-specific NanoMVC instance:
+    nmvc::instance(null, 'controller')
+  - Replaced the old default instance access:
+    nmvc::instance()->controller
+    because the controller property is not available yet while the controller constructor is being executed.
+
 1.0.5 (NanoMVC)
 ---------------
 

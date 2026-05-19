@@ -50,6 +50,9 @@ class NanoMVC_Load {
 
     if (isset($controller->$model_alias)) return true; // skip if already loaded
 
+    if (!property_exists($controller, $model_alias))
+      throw new Exception("Controller does not contain its property '{$model_alias}'.", 500);
+
     $controller->$model_alias = new $model_name($pool_name); // instantiate model
 
     return true;

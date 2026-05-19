@@ -32,7 +32,7 @@ class NanoMVC_Model {
    * @param string|null $poolname
    */
   public function __construct(?string $poolname = null) {
-    $this->db = nmvc::instance()->controller->load->database($poolname);
+    $this->db = nmvc::instance(null, 'controller')->load->database($poolname);
   }
 }
 
