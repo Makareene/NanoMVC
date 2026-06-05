@@ -11,9 +11,16 @@
  */
 
 class Default_Controller extends NanoMVC_Controller {
-  public function index(): void  {
+
+  /**
+   * default action
+   *
+   * @access public
+   */
+  public function index(): void {
     $this->view->display('index_view');
   }
+
 }
 
 ?>

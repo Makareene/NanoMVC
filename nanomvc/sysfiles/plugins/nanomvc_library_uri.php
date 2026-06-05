@@ -25,7 +25,7 @@
  */
 class NanoMVC_Library_URI {
 
-  public ?array $path = null;
+  protected array $path = [];
 
   /**
    * class constructor
@@ -33,7 +33,7 @@ class NanoMVC_Library_URI {
    * @access public
    */
   public function __construct() {
-    $this->path = nmvc::instance()?->url_segments;
+    $this->path = nmvc::instance()->getUrlSegments();
   }
 
   /**
@@ -70,18 +70,34 @@ class NanoMVC_Library_URI {
    *
    * @access public
    * @param int $index
-   * @return array|false
+   * @return array
    */
-  public function uri_to_array(int $index = 1): array|false {
-    return is_array($this->path) ? array_slice($this->path, $index - 1) : false;
+  public function uri_to_array(int $index = 1): array {
+    return array_slice($this->path, $index - 1);
   }
 
-  public function uri(int $index = 1): ?string {
-    $path = $this->uri_to_array($index);
-    return is_array($path) ? implode('/', $path) : null;
+  /**
+   * get URI string starting at index
+   *
+   * @access public
+   * @param int $index
+   * @return string
+   */
+  public function uri(int $index = 1): string {
+    return implode('/', $this->uri_to_array($index));
   }
 
-  function parse_query_string(string $query = ''): array {
+  /**
+   * parse URL query string into key/value pairs
+   *
+   * Example:
+   * asd=1&dsa=2
+   *
+   * @access public
+   * @param string $query query string without leading "?"
+   * @return array
+   */
+  public function parse_query_string(string $query = ''): array {
     $result = [];
     if ($query === '') return $result;
 

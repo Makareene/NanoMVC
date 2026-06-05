@@ -75,12 +75,12 @@
         border-top: 1px solid var(--code-border);
       }
     </style>
-    </head>
+  </head>
   <body>
 
     <h1>Welcome to NanoMVC</h1>
 
-    <p>You’re now running <strong>NanoMVC <?=NMVC_VERSION?></strong>, a modernized and simplified framework based on TinyMVC 1.2.3.</p>
+    <p>You’re now running <strong>NanoMVC <?= NMVC_VERSION ?></strong>, a modernized and simplified framework based on TinyMVC 1.2.3.</p>
 
     <p>This page is generated using the following view:</p>
     <div class="code">nanomvc/myapp/views/index_view.php</div>
@@ -89,8 +89,8 @@
     <div class="code">nanomvc/myapp/controllers/default.php</div>
 
     <p>
-    Ready to build something great? <br>
-    Head over to the <a href="https://nanomvc.nipaa.fyi/doc" rel="nofollow" target="_blank">NanoMVC Documentation</a> to get started.
+      Ready to build something great? <br>
+      Head over to the <a href="https://nanomvc.nipaa.fyi/doc" rel="nofollow" target="_blank">NanoMVC Documentation</a> to get started.
     </p>
 
     <div id="bottom">

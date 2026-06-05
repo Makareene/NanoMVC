@@ -2,7 +2,7 @@
 
 /**
  * Name:       NanoMVC
- * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * About:      A modernized fork of TinyMVC (PHP 8.3+ compatible)
  * Copyright:  (C) 2007-2008 Monte Ohrt, All rights reserved. | Modifications (C) 2025, Nipaa
  * Author:     Monte Ohrt, Nipaa (modifications)
  * License:    LGPL v2.1 or later (see LICENSE file)
@@ -17,7 +17,7 @@
  * @author     Monte Ohrt, Nipaa (modifications)
  */
 class NanoMVC_View {
-  public array $view_vars = [];
+  protected array $view_vars = [];
 
   /**
    * Class constructor
@@ -51,11 +51,16 @@ class NanoMVC_View {
    * display a view file
    *
    * @access public
-   * @param  string $filename the name of the view file
+   * @param  string $view_name the name of the view file
    * @return void
    */    
-  public function display(string $_nmvc_filename, ?array $view_vars = null): void {
-    $this->_view("{$_nmvc_filename}.php", $view_vars);
+  public function display(string $view_name, ?array $view_vars = null): void {
+    $filepath = nmvc::instance()->findView($view_name);
+
+    if (!$filepath)
+      throw new Exception("View '{$view_name}' was not found.", 500);
+
+    $this->_view($filepath, $view_vars);
   }  
 
   /**
@@ -79,15 +84,19 @@ class NanoMVC_View {
   /**
    * sysview
    *
-   * internal: view a system file
+   * internal: display a view file for some system parts
    *
    * @access public
-   * @param  string $filename
+   * @param  string $view_name
    * @param  array|null $view_vars
    * @return void
    */    
-  public function sysview(string $filename, ?array $view_vars = null): void {
-    $filepath = "{$filename}.php";
+  public function sysview(string $view_name, ?array $view_vars = null): void {
+    $filepath = nmvc::instance()->findView($view_name);
+
+    if (!$filepath)
+      throw new Exception("View '{$view_name}' was not found.", 500);
+
     $this->_view($filepath, $view_vars);
   }
 
@@ -96,20 +105,22 @@ class NanoMVC_View {
    *
    * internal: display a view file
    *
-   * @access private
-   * @param  string $_nmvc_filepath
-   * @param  array|null $view_vars
+   * @access protected
+   * @param string $filename
+   * @param array|null $view_vars
    * @return void
-   */    
-  private function _view(string $_nmvc_filepath, ?array $view_vars = null): void {
+   */
+  protected function _view(string $filename, ?array $view_vars = null): void {
     extract($this->view_vars);
     if (isset($view_vars)) extract($view_vars);
+
     try {
-      include $_nmvc_filepath;
-    } catch (Exception $e) {
-      throw new Exception("Trying to include view '$_nmvc_filepath': " . $e->getMessage(), 500);
+      include $filename;
+    } catch (Throwable $e) {
+      throw new Exception("Trying to include view '$filename': " . $e->getMessage(), 500);
     }
   }
+
 }
 
 ?>

@@ -2,7 +2,7 @@
 
 /**
  * Name:       NanoMVC
- * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * About:      A modernized fork of TinyMVC (PHP 8.3+ compatible)
  * Copyright:  (C) 2007-2008 Monte Ohrt, All rights reserved.
  *              | Modifications (C) 2025, Nipaa
  * Author:     Nipaa
@@ -43,9 +43,13 @@ class NanoMVC_ErrorHandler extends ErrorException {
   public static function handleException(Throwable $e): void {
     // print_r($e);die;
     if (!headers_sent())
-      while (ob_get_level() > 0) ob_end_clean(); // clean the all buffer
+      while (ob_get_level() > 0) ob_end_clean(); // clean all buffers
 
     $code = $e->getCode();
+
+    if ($code === 0 && $e instanceof ErrorException)
+      $code = $e->getSeverity();
+
     self::_hSent($code);
 
     $code_val = self::_codeName($code);
@@ -53,21 +57,22 @@ class NanoMVC_ErrorHandler extends ErrorException {
     $file     = $e->getFile();
     $line     = $e->getLine();
 
-    $view = !isset($_GET['is_ajax_json']) ? ((in_array($code, [404, 410], true)) ? 'notfound_view' : 'error_view') : 'json_view';
+    $view = !isset($_GET['is_ajax_json']) ? ((in_array($code, [404, 410], true)) ? 'notfound' : 'error') : 'json';
 
     $statuses = self::_get_statuses();
 
-    if($view == 'json_view') header('Content-Type: application/json');
+    if ($view == 'json') header('Content-Type: application/json');
 
-    nmvc::instance()->view->sysview($view, [
-      'code'       => $code,
-      'code_val'   => $code_val,
-      'message'    => $message,
-      'file'       => $file,
-      'line'       => $line,
-      'outputed'   => headers_sent() ? 1 : 0,
-      'show_error' => ini_get('display_errors') === '1' && (isset($statuses[$code]) || $code === 0 || (error_reporting() & $code))
-    ]);
+    nmvc::instance()->getView()->sysview($view, [ 'code'       => $code
+                                                 ,'code_val'   => $code_val
+                                                 ,'message'    => $message
+                                                 ,'file'       => $file
+                                                 ,'line'       => $line
+                                                 ,'outputed'   => headers_sent() ? 1 : 0
+                                                 ,'show_error' => ini_get('display_errors') === '1'
+                                                               && (isset($statuses[$code]) || $code === 0 || (error_reporting() & $code))
+                                                 ,'statuses'   => $statuses
+                                                ]);
   }
 
   /**
@@ -122,7 +127,7 @@ class NanoMVC_ErrorHandler extends ErrorException {
 
     $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
 
-    // Подставим заголовок и код по умолчанию 500, если код неизвестен
+    // Use status 500 if the error code is unknown
     $status_text = $statuses[$code] ?? $statuses[500];
     $status_code = array_key_exists($code, $statuses) ? $code : 500;
 

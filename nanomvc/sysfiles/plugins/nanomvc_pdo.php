@@ -2,7 +2,7 @@
 
 /**
  * Name:       NanoMVC
- * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * About:      A modernized fork of TinyMVC (PHP 8.3+ compatible)
  * Copyright:  (C) 2007-2008 Monte Ohrt, All rights reserved. | Modifications (C) 2025, Nipaa
  * Author:     Monte Ohrt, monte [at] ohrt [dot] com, Nipaa (modifications)
  * License:    LGPL v2.1 or later (see LICENSE file)
@@ -42,10 +42,7 @@ class NanoMVC_PDO {
   public ?string $last_query = null;
 
   /** @var array $last_params Params of last executed query */
-  private array $last_params = [];
-
-  /** @var string|null $last_query_type Type of last query */
-  public ?string $last_query_type = null;
+  protected array $last_params = [];
 
   /** @var string PDO driver */
   public string $driver = '';
@@ -83,12 +80,18 @@ class NanoMVC_PDO {
     try {
       $this->pdo = new PDO($dsn, $config['user'], $config['pass'], [PDO::ATTR_PERSISTENT => !empty($config['persistent'])]);
 
-      if (in_array($type, ['mysql', 'mariadb'])) $this->pdo->exec("SET CHARACTER SET {$charset}"); // Apply charset for MySQL/MariaDB
+      $this->driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+      $this->quoting = $this->driver === 'mysql' ? '`' : '"';
+
+      if (in_array($type, ['mysql', 'mariadb']))
+        $this->pdo->exec("SET CHARACTER SET " . $this->pdo->quote($charset)); // Apply charset for MySQL/MariaDB
 
       if ($type === 'pgsql') {
-        if ($charset) $this->pdo->exec("SET client_encoding TO '{$charset}'"); // Apply charset for PostgreSQL (client encoding)
+        if ($charset)
+          $this->pdo->exec("SET client_encoding TO " . $this->pdo->quote($charset)); // Apply charset for PostgreSQL (client encoding)
 
-        if ($schema) $this->pdo->exec("SET search_path TO {$schema}"); //Apply schema
+        if ($schema)
+          $this->pdo->exec("SET search_path TO " . $this->quoteIdentifier($schema)); // Apply schema
       }
 
       $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -96,10 +99,6 @@ class NanoMVC_PDO {
     } catch (PDOException $e) {
       throw new Exception(sprintf("Can't connect to PDO database '%s'. Error: %s", $type, $e->getMessage()), 500);
     }
-
-    $this->driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
-
-    $this->quoting = $this->driver === 'mysql' ? '`' : '"';
 
   }
 
@@ -167,14 +166,14 @@ class NanoMVC_PDO {
    *
    * set the active record WHERE clause
    *
-   * @access private
+   * @access protected
    * @param string $clause
    * @param array $args
    * @param string $prefix
    * @return array
    * @throws Exception
    */
-  private function _where(string $clause, array $args = [], string $prefix = 'AND'): array {
+  protected function _where(string $clause, array $args = [], string $prefix = 'AND'): array {
     if (empty($clause)) throw new Exception('WHERE clause cannot be empty', 500);
 
     $placeholders = substr_count($clause, '?');
@@ -242,22 +241,27 @@ class NanoMVC_PDO {
    *
    * Builds an active record IN clause
    *
-   * @access private
+   * @access protected
    * @param string $field
    * @param array|string $elements
    * @param bool $list
    * @param string $prefix
    * @return void
    */
-  private function _in(string $field, array|string $elements, bool $list = false, string $prefix = 'AND'): void {
+  protected function _in(string $field, array|string $elements, bool $list = false, string $prefix = 'AND'): void {
     if (!$list) {
       if (!is_array($elements)) $elements = explode(',', (string)$elements);
 
-      $quoted = array_map(fn($v) => $this->pdo->quote(trim($v)), $elements);
-      $clause = "{$field} IN (" . implode(',', $quoted) . ")";
-    } else $clause = "{$field} IN ({$elements})";
+      $elements = array_map(fn($v) => trim($v), $elements);
+      $placeholders = implode(',', array_fill(0, count($elements), '?'));
+      $clause = "{$field} IN ({$placeholders})";
 
-    $this->_where($clause, [], $prefix);
+      $this->_where($clause, $elements, $prefix);
+    } else {
+      $clause = "{$field} IN ({$elements})";
+
+      $this->_where($clause, [], $prefix);
+    }
   }
 
   /**
@@ -306,13 +310,13 @@ class NanoMVC_PDO {
    *
    * Generic method to assign a query clause
    *
-   * @access private
+   * @access protected
    * @param string $type
    * @param string $clause
    * @param array $args
    * @return void
    */
-  private function _set_clause(string $type, string $clause, array $args = []): void {
+  protected function _set_clause(string $type, string $clause, array $args = []): void {
     if ($type === '' || $clause === '') throw new Exception('Clause type or value cannot be empty', 500);
 
     $this->query_params[$type] = ['clause' => $clause];
@@ -325,13 +329,13 @@ class NanoMVC_PDO {
    *
    * Builds an active record SELECT query string
    *
-   * @access private
+   * @access protected
    * @param array &$params
    * @param int|null $fetch_mode
    * @return string
    * @throws Exception
    */
-  private function _query_assemble(array &$params = [], ?int $fetch_mode = null): string {
+  protected function _query_assemble(array &$params = [], ?int $fetch_mode = null): string {
     if (empty($this->query_params['from'])) throw new Exception('FROM clause is required. Call from() before get().', 500);
 
     $parts = [];
@@ -354,7 +358,7 @@ class NanoMVC_PDO {
 
     $query_string = implode(' ', $parts);
 
-    $this->query_params = ['select' => '*']; // reset for next query
+    $this->resetQuery(); // reset for next query
 
     return $query_string;
   }
@@ -364,12 +368,12 @@ class NanoMVC_PDO {
    *
    * Assembles WHERE clause and collects bound parameters
    *
-   * @access private
+   * @access protected
    * @param string &$where
    * @param array &$params
    * @return bool
    */
-  private function _assemble_where(string &$where, array &$params = []): bool {
+  protected function _assemble_where(string &$where, array &$params = []): bool {
     if (empty($this->query_params['where'])) return false;
 
     $clauses = [];
@@ -445,7 +449,7 @@ class NanoMVC_PDO {
    *
    * Internal query executor with result handling
    *
-   * @access private
+   * @access protected
    * @param string $query
    * @param array|null $params
    * @param int $return_type
@@ -453,7 +457,7 @@ class NanoMVC_PDO {
    * @return mixed
    * @throws Exception
    */
-  private function _query(string $query, array $params = [], int $return_type = NMVC_SQL_NONE, ?int $fetch_mode = null): mixed {
+  protected function _query(string $query, array $params = [], int $return_type = NMVC_SQL_NONE, ?int $fetch_mode = null): mixed {
     $fetch_mode ??= $this->fetch_mode;
 
     try {
@@ -502,12 +506,12 @@ class NanoMVC_PDO {
 
     foreach ($columns as $name => $value) {
       if ($name === '') continue;
-      $fields[] = $this->quoting . $name . $this->quoting . ' = ?';
+      $fields[] = $this->quoteIdentifier($name) . ' = ?';
       $params[] = $value;
     }
 
     $query_parts = [
-      'UPDATE ' . $this->quoting . $table . $this->quoting . ' SET',
+      'UPDATE ' . $this->quoteIdentifier($table) . ' SET',
       implode(', ', $fields)
     ];
 
@@ -519,7 +523,7 @@ class NanoMVC_PDO {
       $params = array_merge($params, $where_params);
     }
 
-    $this->query_params = ['select' => '*'];
+    $this->resetQuery(); // reset for next query
 
     $query = implode(' ', $query_parts);
     return $this->_query($query, $params) === true;
@@ -541,11 +545,17 @@ class NanoMVC_PDO {
 
     if (empty($columns)) throw new Exception('Unable to insert, at least one column required', 500);
 
-    $names = array_keys($columns);
     $placeholders = array_fill(0, count($columns), '?');
     $params = array_values($columns);
 
-    $query = sprintf('INSERT INTO ' . $this->quoting . '%s' . $this->quoting . '('. $this->quoting . '%s' . $this->quoting . ') VALUES (%s)', $table, implode($this->quoting . ',' . $this->quoting, $names), implode(',', $placeholders));
+    $names = array_map(fn($name) => $this->quoteIdentifier($name), array_keys($columns));
+
+    $query = sprintf(
+      'INSERT INTO %s (%s) VALUES (%s)',
+                     $this->quoteIdentifier($table),
+                     implode(',', $names),
+                     implode(',', $placeholders)
+    );
 
     $this->_query($query, $params);
     return $this->last_insert_id();
@@ -564,7 +574,7 @@ class NanoMVC_PDO {
   public function delete(string $table): bool {
     if (empty($table)) throw new Exception('Unable to delete, table name required', 500);
 
-    $query = ['DELETE FROM ' . $this->quoting . $table . $this->quoting];
+    $query = ['DELETE FROM ' . $this->quoteIdentifier($table)];
     $params = [];
 
     $where_sql = '';
@@ -575,7 +585,7 @@ class NanoMVC_PDO {
       $params = array_merge($params, $where_params);
     }
 
-    $this->query_params = ['select' => '*'];
+    $this->resetQuery(); // reset for next query
 
     return $this->_query(implode(' ', $query), $params) === true;
   }
@@ -590,6 +600,8 @@ class NanoMVC_PDO {
    * @return mixed
    */
   public function next(?int $fetch_mode = null): mixed {
+    if (!$this->result) return false;
+
     if ($fetch_mode !== null) $this->result->setFetchMode($fetch_mode);
     $res = $this->result->fetch();
     if ($res) $this->num_rows++;
@@ -635,6 +647,8 @@ class NanoMVC_PDO {
    * @return string|null
    */
   public function last_query(bool $show_params = false): ?string {
+    if ($this->last_query === null) return null;
+
     if ($show_params === false) return $this->last_query;
 
     $query = $this->last_query;
@@ -651,13 +665,65 @@ class NanoMVC_PDO {
     return $query;
   }
 
-  private function _set_whereclause(?string &$clause, array|string|int|float|null $args) {
+  /**
+   * _set_whereclause
+   *
+   * Normalizes WHERE clause syntax.
+   *
+   * If value is NULL:
+   *   field -> field IS NULL
+   *
+   * Otherwise adds a placeholder and comparison operator if needed:
+   *   field      -> field = ?
+   *   field =    -> field = ?
+   *   field >    -> field > ?
+   *   field !=   -> field != ?
+   *
+   * @access protected
+   * @param string|null $clause
+   * @param array|string|int|float|null $args
+   * @return void
+   */
+  protected function _set_whereclause(?string &$clause, array|string|int|float|null $args): void {
     if ($args === null) $clause = (trim($clause) . ' IS NULL');
     else {
       if (!preg_match('/\?\s*$/', $clause)) $clause .= '?';
 
       if (!preg_match('/(?:[=<>]|!=|<>)\s*\?\s*$/', $clause)) $clause = preg_replace('/\s*\?\s*$/', ' = ?', $clause);
     }
+  }
+
+ /**
+  * quote SQL identifier
+  *
+  * Escapes identifier quote characters and wraps the identifier
+  * using the current database quoting style.
+  *
+  * Examples:
+  * PostgreSQL: my"table -> "my""table"
+  * MySQL:      my`table -> `my``table`
+  *
+  * @access protected
+  * @param string $identifier
+  * @return string
+  */
+  protected function quoteIdentifier(string $identifier): string {
+    return implode('.', array_map( fn($part) => $this->quoting
+                                              . str_replace($this->quoting, $this->quoting . $this->quoting, $part)
+                                              . $this->quoting
+                                              , explode('.', $identifier)
+                                 )
+                  );
+  }
+
+  /**
+   * reset query parameters
+   *
+   * @access protected
+   * @return void
+   */
+  protected function resetQuery(): void {
+    $this->query_params = ['select' => '*'];
   }
 
   /**

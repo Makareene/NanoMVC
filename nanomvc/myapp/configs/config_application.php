@@ -1,7 +1,7 @@
 <?php
 
 /**
- * application.php
+ * config_application.php
  *
  * Application configuration for NanoMVC
  *
@@ -10,22 +10,30 @@
  * @license     LGPL v2.1 or later
  */
 
-// URL routing, use preg_replace() compatible syntax
-$config['routing']['search'] = [];
-$config['routing']['replace'] = [];
+return [
 
-// Set this to force controller and method instead of using URL params
-$config['root_controller'] = null;
-$config['root_action'] = null;
+  // URL routing, use preg_replace() compatible syntax
+  'routing' => [ 'search'  => []
+                ,'replace' => []
+               ]
 
-// Default controller/method when none is given in the URL
-$config['default_controller'] = 'default';
-$config['default_action'] = 'index';
+  // Set this to force controller and method instead of using URL params
+ ,'root_controller' => null
+ ,'root_action'     => null
 
-// PHP class that handles system errors
-$config['error_handler_class'] = 'NanoMVC_ErrorHandler';
+  // Default controller/method when none is given in the URL
+ ,'default_controller' => 'default'
+ ,'default_action'     => 'index'
 
-// Enable timer. Use {NMVC_TIMER} in your view to see it
-$config['timer'] = true;
+  // PHP class that handles system errors
+ ,'error_handler_class' => 'NanoMVC_ErrorHandler'
+
+  // Enable timer. Use {NMVC_TIMER} in your view to see it
+ ,'timer' => true
+
+  // Autoload files
+ ,'autoload' => [] // Use a full path starting with the DS constant, or use a relative path from the "myapp" project directory.
+
+];
 
 ?>

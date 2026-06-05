@@ -1,18 +1,18 @@
 <?php
-$arr_main = ['err_type' => $code != 404? 'Error': 'Type'
-            ,'err_code' => $code
-            ,'err_name' => $code_val
-            ];
 
-$arr_desc = [];
+$result = [ 'err_type' => isset($statuses[$code]) ? 'HTTP' : 'Error'
+           ,'err_code' => $code
+           ,'err_name' => $code_val
+          ];
 
 if ($show_error)
-  $arr_desc = ['err_msg' => $message
+  $result += [ 'err_msg'  => $message
               ,'err_file' => $file
               ,'err_line' => $line
-              ];
+             ];
 
-$arr_res = array_merge($arr_main, $arr_desc);
+echo json_encode( $result
+                 ,JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+                );
+
 ?>
-
-<?=json_encode($arr_res)?>

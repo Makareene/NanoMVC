@@ -15,58 +15,49 @@
 
 class NanoMVC_Library_BlogMenu {
 
-  private array $controller_paths;
-  private string $format = 'Y-m-d H:i';
+  protected string $format = 'Y-m-d H:i';
 
   /**
    * Constructor
    */
-  public function __construct() {
-    $path = 'controllers' . DS;
-    $this->controller_paths = ['myapp' => NMVC_MYAPPDIR . $path,
-                               'myfiles' => NMVC_BASEDIR . 'myfiles' . DS . $path
-                              ];
-
-  }
+  public function __construct() {}
 
   public function get_categories(?string $controller = null, string $order = 'created desc'): array {
     $categories = [];
 
-    foreach ($this->controller_paths as $key => $path) {
-      $files = $controller === null
-             ? glob($path . '*.php')
-             : [ $path . $controller . '.php' ];
+    if ($controller === null)
+      $files = nmvc::instance()->findControllers();
+    else {
+      $file = nmvc::instance()->findController($controller);
+      $files = $file ? [$file] : [];
+    }
 
-      foreach ($files as $file) {
-        if (!file_exists($file)) continue;
+    foreach ($files as $file) {
+      $filename = basename($file, '.php');
+      if (isset($categories[$filename])) continue;
 
-        $filename = basename($file, '.php');
-        if (isset($categories[$filename])) continue;
+      $categories[$filename] = [];
 
-        $categories[$filename] = [];
+      $handle = fopen($file, 'r');
+      if ($handle === false) throw new Exception("Can't open the Controller '{$filename}'", 500);
+      $first_line = rtrim(fgets($handle), "\r\n");
+      fclose($handle);
+      //echo $first_line;
+      preg_match('/^\<\?php \/\/ -\> as category: \{\s*(?<res>.*)\s*\}\s*\?\>$/iu', $first_line, $regexp);
+      //print_r($regexp);die;
+      if (isset($regexp['res'])) $regexp['res'] = '{ ' . trim($regexp['res']) . ' }';
+      else continue;
 
-        $handle = fopen($file, 'r');
-        if ($handle === false) throw new Exception("Can't open the Controller '{$filename}'", 500);
-        $first_line = fgets($handle);
-        fclose($handle);
-        //echo $first_line;
-        preg_match('/^\<\?php \/\/ -\> as categorie: \{\s*(?<res>.*)\s*\}\s*\?\>$/iu', $first_line, $regexp);
-        //print_r($regexp);die;
-        if (isset($regexp['res'])) $regexp['res'] = '{ ' . trim($regexp['res']) . ' }';
-        else continue;
-
-        try {
-          $json = json_decode($regexp['res'], false, 512, JSON_THROW_ON_ERROR);
-          if (isset($json->name, $json->created)) {
-            $dt = DateTime::createFromFormat($this->format, $json->created);
-            if (!($dt && $dt->format($this->format) === $json->created)) throw new Exception("Date created in the controller '{$filename}' is incorrect", 500);
-            foreach ($json as $key => $value) $categories[$filename][$key] = $value;
-            $categories[$filename]['_link'] = '/' . $filename;
-          } else continue;
-        } catch (Throwable $e) {
-          throw new Exception("Invalid JSON metadata in the controller '{$filename}': " . $e->getMessage(), 500);
-        }
-
+      try {
+        $json = json_decode($regexp['res'], false, 512, JSON_THROW_ON_ERROR);
+        if (isset($json->name, $json->created)) {
+          $dt = DateTime::createFromFormat($this->format, $json->created);
+          if (!($dt && $dt->format($this->format) === $json->created)) throw new Exception("Date created in the controller '{$filename}' is incorrect", 500);
+          foreach ($json as $key => $value) $categories[$filename][$key] = $value;
+          $categories[$filename]['_link'] = '/' . $filename;
+        } else continue;
+      } catch (Throwable $e) {
+        throw new Exception("Invalid JSON metadata in the controller '{$filename}': " . $e->getMessage(), 500);
       }
 
     }
@@ -83,11 +74,7 @@ class NanoMVC_Library_BlogMenu {
     $articles = [];
 
     if ($controller_name) {
-      $file = null;
-      if (is_file($this->controller_paths['myapp'] . $controller_name . '.php'))
-        $file = $this->controller_paths['myapp'] . $controller_name . '.php';
-      elseif (is_file($this->controller_paths['myfiles'] . $controller_name . '.php'))
-        $file = $this->controller_paths['myfiles'] . $controller_name . '.php';
+      $file = nmvc::instance()->findController($controller_name);
 
       if ($file) {
         include_once $file;
@@ -100,7 +87,6 @@ class NanoMVC_Library_BlogMenu {
 
     $name = $controller->_get_controller();
 
-    $methods = get_class_methods($controller);
     $class = new ReflectionClass($controller);
     $methods = $action !== null ? [$action] : get_class_methods($controller);
 

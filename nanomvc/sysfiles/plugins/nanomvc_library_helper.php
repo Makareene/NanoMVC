@@ -1,33 +1,32 @@
 <?php
 
 /**
- * Name:       NanoMVC
- * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * Name:       NanoMVC_Library_Helper
+ * About:      Utility library for debugging, redirection, and low-level helpers
  * Copyright:  (C) 2007-2008 Monte Ohrt, All rights reserved. | Modifications (C) 2025, Nipaa
  * Author:     Monte Ohrt, monte [at] ohrt [dot] com, Nipaa (modifications)
  * License:    LGPL v2.1 or later (see LICENSE file)
  */
 
 /**
- * NanoMVC_Script_Helper
- *
- * Utility class for debugging, redirection, and low-level script helpers.
+ * NanoMVC_Library_Helper
  *
  * @package    NanoMVC
  */
-class NanoMVC_Script_Helper
-{
+class NanoMVC_Library_Helper {
+
   /**
    * Show a PHP variable in a formatted debug window.
    *
-   * @param mixed       $var    Variable to display
-   * @param string|null $name   Optional header name
-   * @param bool        $return Return or output contents
-   * @param bool        $esc    HTML-escape output
-   * @param bool        $hide   Hide inside HTML comments
+   * @access public
+   * @param mixed $var Variable to display
+   * @param string|null $name Optional header name
+   * @param bool $return Return or output contents
+   * @param bool $esc HTML-escape output
+   * @param bool $hide Hide inside HTML comments
    * @return string|null
    */
-  public static function debug(mixed $var, ?string $name = null, bool $return = false, bool $esc = true, bool $hide = false): ?string {
+  public function debug(mixed $var, ?string $name = null, bool $return = false, bool $esc = true, bool $hide = false): ?string {
     ob_start();
 
     if (!$hide) {
@@ -53,17 +52,18 @@ class NanoMVC_Script_Helper
   /**
    * Send headers and redirect.
    *
-   * @param string $uri     Destination URI
-   * @param array  $headers Optional headers to send before redirection
+   * @access public
+   * @param string $uri Destination URI
+   * @param int|null $code HTTP status code
    * @return false
    */
-  public static function redirect(string $uri, ?int $code = null): false {
+  public function redirect(string $uri, ?int $code = null): false {
     if (empty($uri)) return false;
 
     // Send status code header if specified
     if ($code === 301) {
       $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
-      $res = self::send_headers([$protocol . ' 301 Moved Permanently' => null]);
+      $res = $this->send_headers([$protocol . ' 301 Moved Permanently' => null]);
       if (!$res) return false;
     }
 
@@ -74,10 +74,12 @@ class NanoMVC_Script_Helper
   /**
    * Send additional headers safely.
    *
+   * @access public
    * @param array $headers Associative array or single-line headers
+   * @param bool $replace Replace previous similar header
    * @return bool
    */
-  public static function send_headers(array $headers = [], bool $replace = true): bool {
+  public function send_headers(array $headers = [], bool $replace = true): bool {
     if (headers_sent()) return false;
 
     $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
@@ -102,15 +104,38 @@ class NanoMVC_Script_Helper
     return true;
   }
 
-  public static function esc_html(string $text): string {
-    return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+  /**
+   * escape HTML text
+   *
+   * @access public
+   * @param string $text
+   * @param string|null $charset
+   * @return string
+   */
+  public function esc_html(string $text, ?string $charset = 'UTF-8'): string {
+    return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, $charset ?? 'UTF-8');
   }
 
-  public static function view(string $_nmvc_filename, ?array $view_vars = null): void {
-    (new NanoMVC_View)->display($_nmvc_filename, $view_vars);
+  /**
+   * display view
+   *
+   * @access public
+   * @param string $filename
+   * @param array|null $view_vars
+   * @return void
+   */
+  public function view(string $filename, ?array $view_vars = null): void {
+    nmvc::instance(null, 'controller')->view->display($filename, $view_vars);
   }
 
-  public static function is_int_like(mixed $value): bool {
+  /**
+   * check if value is integer-like
+   *
+   * @access public
+   * @param mixed $value
+   * @return bool
+   */
+  public function is_int_like(mixed $value): bool {
     if (!is_string($value) && !is_int($value)) return false;
 
     $str = (string)$value;
@@ -124,6 +149,33 @@ class NanoMVC_Script_Helper
     if ($str === '') return false;
 
     return ctype_digit($str);
+  }
+
+  /**
+   * normalize public URL path
+   *
+   * Removes empty parts, "." and ".." path traversal parts.
+   *
+   * Example:
+   * /asd//dsa///../../realconfig.html -> /asd/dsa/realconfig.html
+   *
+   * @access public
+   * @param string $path
+   * @return string
+   */
+  public function public_path(string $path): string {
+    $parts = explode('/', $path);
+    $safe = [];
+
+    foreach ($parts as $part) {
+      $part = trim($part);
+
+      if ($part === '' || $part === '.' || $part === '..') continue;
+
+      $safe[] = $part;
+    }
+
+    return '/' . implode('/', $safe);
   }
 
 }

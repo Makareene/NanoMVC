@@ -2,7 +2,7 @@
 
 /**
  * Name:       NanoMVC
- * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * About:      A modernized fork of TinyMVC (PHP 8.3+ compatible)
  * Copyright:  (C) 2007-2008 Monte Ohrt, All rights reserved. | Modifications (C) 2025, Nipaa
  * Author:     Monte Ohrt, monte [at] ohrt [dot] com, Nipaa (modifications)
  * License:    LGPL v2.1 or later (see LICENSE file)
@@ -32,9 +32,9 @@ class NanoMVC_Controller {
     nmvc::instance($this, 'controller'); // save controller instance
 
     $this->load = new NanoMVC_Load; // instantiate load library
-    $this->view = &nmvc::instance()->view;
-    if($controller_name) $this->_set_controller($controller_name); // save controller name
-    if($action) $this->_set_action($action); // save action name
+    $this->view = nmvc::instance()->getView();
+    if ($controller_name) $this->_set_controller($controller_name); // save controller name
+    if ($action) $this->_set_action($action); // save action name
   }
 
   /**
@@ -59,7 +59,7 @@ class NanoMVC_Controller {
     throw new Exception("Unknown controller method '{$function}'", 404);
   }
 
-  public final function _set_action($name): void {
+  public final function _set_action(string $name): void {
     $this->action = $name;
   }
 
@@ -67,7 +67,7 @@ class NanoMVC_Controller {
     return $this->action;
   }
 
-  public final function _set_controller($name): void {
+  public final function _set_controller(string $name): void {
     $this->controller = $name;
   }
 
