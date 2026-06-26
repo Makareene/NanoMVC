@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<access>
+  <roles>
+    <role name="admin">
+      <rule controller="*" actions="*" permissions="r,w,d,c"/>
+    </role>
+  </roles>
+
+  <users>
+    <user login="Admin" roles="admin"/>
+  </users>
+</access>
