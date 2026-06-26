@@ -20,8 +20,8 @@ class NanoMVC_Controller {
 
   public NanoMVC_Load $load;
   public NanoMVC_View $view;
-  private string|null $action = null;
-  private string|null $controller = null;
+  private ?string $action = null;
+  private ?string $controller = null;
 
   /**
    * class constructor

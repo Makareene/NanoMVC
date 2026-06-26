@@ -2,6 +2,19 @@
 
 ---
 
+## 1.0.8 (NanoMVC)
+
+### Access Plugin
+
+- Added NanoMVC_Library_Access for XML-based authentication and authorization.
+- Added user management with create, update, delete, reset, activation, login, logout, and unlock operations.
+- Added role management with create, update, rename, and delete support.
+- Added wildcard-based controller and action matching with CRUD (r, w, c, d) permissions.
+- Added automatic permission mapping for building navigation menus.
+- Added configurable XML storage without requiring a database.
+- Added automatic session invalidation when a user account, assigned roles, or role permissions are modified.
+- Added support for configurable session keys, failed login limits, and access file locations.
+
 ## 1.0.7 (NanoMVC)
 
 ### Core

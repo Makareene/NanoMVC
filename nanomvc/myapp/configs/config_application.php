@@ -9,6 +9,8 @@
  * @author      Monte Ohrt (original), Nipaa (modifications)
  * @license     LGPL v2.1 or later
  */
+ 
+ // Use a full path starting with the "DS" constant, or use a relative path from the "myapp" project directory.
 
 return [
 
@@ -32,7 +34,13 @@ return [
  ,'timer' => true
 
   // Autoload files
- ,'autoload' => [] // Use a full path starting with the DS constant, or use a relative path from the "myapp" project directory.
+ ,'autoload' => []
+
+  // Access plugin
+ ,'access' => [ 'file'        => 'configs' . DS . 'access.xml'
+               ,'session_key' => 'nanomvc_access_user'
+               ,'max_failed'  => 3
+              ]
 
 ];
 

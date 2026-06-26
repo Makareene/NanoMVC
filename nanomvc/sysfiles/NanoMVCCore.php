@@ -14,7 +14,7 @@ defined('NMVC_BASEDIR') || define('NMVC_BASEDIR', dirname(__DIR__) . DS);
 
 defined('NMVC_MYAPPDIR') || define('NMVC_MYAPPDIR', NMVC_BASEDIR . 'myapp' . DS);
 
-defined('NMVC_VERSION') || define('NMVC_VERSION', '1.0.7');
+defined('NMVC_VERSION') || define('NMVC_VERSION', '1.0.8');
 
 /**
  * nmvc -> nmvc_core
@@ -500,6 +500,16 @@ class nmvc_core {
    */
   public function findViews(string $filter = '*'): array {
     return $this->findFiles('view', $filter);
+  }
+
+  /**
+   * get config application
+   *
+   * @access public
+   * @return array
+   */
+  public function getAppConfig(): array {
+    return $this->config;
   }
 
 }
