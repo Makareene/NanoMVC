@@ -19,6 +19,7 @@ Inspired by TinyMVC and modernized for PHP 8.3+, NanoMVC focuses on simplicity, 
 - Built-in error and exception handling
 - Flexible application structure
 - Easy framework customization
+- Asset plugin for automatic JavaScript and CSS bundling and generation
 - BlogMenu plugin for code-based blogs and documentation
 - Access plugin for XML-based user, role, and permission management
 
