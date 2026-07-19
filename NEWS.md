@@ -2,6 +2,19 @@
 
 ---
 
+## 1.0.9 (NanoMVC)
+
+### Asset Plugin
+
+- Added NanoMVC_Library_Asset for automatic JavaScript and CSS bundling.
+- Added configurable asset generation through `config_generation.php`.
+- Added support for generating bundled assets only when needed or on every request.
+- Added customizable asset directory resolution through an overridable library method.
+- Added automatic generation of target directories and bundled asset files.
+- Added support for preserving source file boundaries with generated comments.
+
+---
+
 ## 1.0.8 (NanoMVC)
 
 ### Access Plugin
