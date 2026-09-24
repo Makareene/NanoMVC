@@ -178,6 +178,31 @@ class NanoMVC_Library_Helper {
     return '/' . implode('/', $safe);
   }
 
+  /**
+   * Send ETag header and stop response if content was not modified.
+   *
+   * @access public
+   * @param string $hash ETag hash
+   * @return void
+   */
+  public function etag(string $hash): void {
+    $etag = '"' . $hash . '"';
+
+    $current_etag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? null;
+
+    if ($current_etag === $etag) {
+      $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
+
+      $this->send_headers([ $protocol . ' 304 Not Modified' => null
+                           ,'ETag' => $etag
+                          ]);
+
+      exit;
+    }
+
+    $this->send_headers(['ETag' => $etag]);
+  }
+
 }
 
 ?>
