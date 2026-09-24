@@ -110,7 +110,9 @@ class NanoMVC_Library_Asset {
       $content = '';
 
       foreach ($asset['list'] as $file_name) {
-        $source_file = $source_directory . DS . $file_name;
+        $source_file = isset($file_name[0]) && $file_name[0] === DS
+                     ? $file_name
+                     : $source_directory . DS . $file_name;
 
         if (!is_file($source_file))
           throw new Exception('Source asset file "' . $source_file . '" was not found.', 500);

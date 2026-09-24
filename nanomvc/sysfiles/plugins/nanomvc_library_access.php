@@ -36,7 +36,7 @@ class NanoMVC_Library_Access {
 
   public function __construct() {
     if (session_status() !== PHP_SESSION_ACTIVE)
-      session_start();
+      throw new Exception('PHP session was not started.', 500);
 
     $config = nmvc::instance()->getAppConfig();
 
@@ -46,7 +46,7 @@ class NanoMVC_Library_Access {
     if (!empty($config['access']['session_key']))
       $this->session_key = $config['access']['session_key'];
 
-    if (!empty($config['access']['max_failed']))
+    if (isset($config['access']['max_failed']))
       $this->max_failed = abs((int)$config['access']['max_failed']);
 
     $this->file = $config['access']['file'];
@@ -109,8 +109,14 @@ class NanoMVC_Library_Access {
     if (!$unlock)
       throw new Exception('Unlock key was not prepared.', 403);
 
-    $user['password'] = password_hash($password, PASSWORD_DEFAULT);
-    $user['unlock'] = password_hash($unlock, PASSWORD_DEFAULT);
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+    $unlock_hash = password_hash($unlock, PASSWORD_DEFAULT);
+
+    if ($password_hash === false || $unlock_hash === false)
+      throw new Exception('Password hashing failed.', 500);
+
+    $user['password'] = $password_hash;
+    $user['unlock'] = $unlock_hash;
     $user['failed'] = '0';
     $user['changed'] = $this->changed();
 
@@ -175,15 +181,17 @@ class NanoMVC_Library_Access {
     $user = $this->find_user($login);
 
     if (!$user)
-      throw new Exception('User was not found.', 404);
+      throw new Exception('Login failed.', 403);
 
     if ((string)$user['password'] === '')
-      throw new Exception('User was not activated.', 403);
+      throw new Exception('Login failed.', 403);
 
     if ($this->is_blocked($login))
       throw new Exception('Account is locked. Unlock key is required.', 403);
 
     if (!password_verify($password, (string)$user['password'])) {
+      unset($_SESSION[$this->session_key . '_unlocked'][$login]);
+
       $this->increase_failed($user);
       $this->save();
 
@@ -196,11 +204,16 @@ class NanoMVC_Library_Access {
 
     $this->save();
 
+    if (!session_regenerate_id(true))
+      throw new Exception('Unable to regenerate session ID.', 500);
+
     $this->set_session_user($user);
   }
 
   public function logout(): void {
     unset($_SESSION[$this->session_key]);
+
+    $this->clear_user();
   }
 
   public function user(): ?array {
