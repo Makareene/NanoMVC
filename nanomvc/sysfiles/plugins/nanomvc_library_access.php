@@ -51,7 +51,7 @@ class NanoMVC_Library_Access {
 
     $this->file = $config['access']['file'];
 
-    if (!str_starts_with($this->file, DS))
+    if (!nmvc::instance()->isAbsolutePath($this->file))
       $this->file = NMVC_MYAPPDIR . DS . $this->file;
 
     $this->load();
