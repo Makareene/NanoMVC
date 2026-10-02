@@ -97,7 +97,7 @@ class NanoMVC_PDO {
       $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     } catch (PDOException $e) {
-      throw new Exception(sprintf("Can't connect to PDO database '%s'. Error: %s", $type, $e->getMessage()), 500);
+      throw new Exception(sprintf("Can't connect to PDO database '%s'. Error: %s", $type, $e->getMessage()), 500, $e);
     }
 
   }
@@ -465,7 +465,7 @@ class NanoMVC_PDO {
       $this->result->execute($params);
       $this->result->setFetchMode($fetch_mode);
     } catch (PDOException $e) {
-      throw new Exception("PDO Error: {$e->getMessage()} | Query: $query", 500);
+      throw new Exception("PDO Error: {$e->getMessage()} | Query: $query", 500, $e);
     }
 
     if (in_array($return_type, [NMVC_SQL_INIT, NMVC_SQL_ALL], true)) {

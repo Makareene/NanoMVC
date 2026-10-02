@@ -230,7 +230,7 @@ class nmvc_core {
     if (isset($this->config['autoload']) && is_array($this->config['autoload'])) {
       foreach ($this->config['autoload'] as $file) {
         try {
-          $path = isset($file[0]) && $file[0] === DS
+          $path = $this->isAbsolutePath($file)
                 ? $file
                 : NMVC_MYAPPDIR . $file;
 
@@ -510,6 +510,23 @@ class nmvc_core {
    */
   public function getAppConfig(): array {
     return $this->config;
+  }
+
+  /**
+   * check if path is absolute
+   *
+   * @access public
+   * @param string $path
+   * @return bool
+   */
+  public function isAbsolutePath(string $path): bool {
+    if ($path === '')
+      return false;
+
+    if ($path[0] === '/' || $path[0] === '\\')
+      return true;
+
+    return (bool)preg_match('/^[a-zA-Z]:[\/\\\\]/', $path);
   }
 
 }
