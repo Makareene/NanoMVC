@@ -1,5 +1,0 @@
-# Keep custom code outside the NanoMVC repository.
-/nanomvc/myfiles/*
-!/nanomvc/myfiles/plugins/
-/nanomvc/myfiles/plugins/*
-!/nanomvc/myfiles/plugins/README
