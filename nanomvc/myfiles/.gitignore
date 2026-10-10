@@ -1,5 +1,0 @@
-*
-!.gitignore
-!plugins/
-plugins/*
-!plugins/README
