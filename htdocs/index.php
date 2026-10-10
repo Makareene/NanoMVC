@@ -2,7 +2,7 @@
 
 /**
  * Name:       NanoMVC
- * About:      A modernized fork of TinyMVC (PHP 8.4+ compatible)
+ * About:      A modernized fork of TinyMVC (PHP 8.3+ compatible)
  * Copyright:  (C) 2007, New Digital Group Inc. | Modifications (C) 2025, Nipaa
  * License:    LGPL v2.1 or later (see LICENSE file)
  */

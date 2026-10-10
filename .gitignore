@@ -1,0 +1,4 @@
+/nanomvc/myfiles/*
+!/nanomvc/myfiles/plugins/
+/nanomvc/myfiles/plugins/*
+!/nanomvc/myfiles/plugins/README
