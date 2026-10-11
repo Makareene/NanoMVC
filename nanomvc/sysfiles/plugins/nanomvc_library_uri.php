@@ -13,6 +13,7 @@
  * $this->uri->segment(3);
  * $this->uri->uri_to_assoc(3);
  * $this->uri->uri_to_array(3);
+ * $this->uri->original_uri(); // original URI before routing, including the leading slash
  */
 
 // ------------------------------------------------------------------------
@@ -26,6 +27,7 @@
 class NanoMVC_Library_URI {
 
   protected array $path = [];
+  protected string $original_path = '/';
 
   /**
    * class constructor
@@ -34,6 +36,7 @@ class NanoMVC_Library_URI {
    */
   public function __construct() {
     $this->path = nmvc::instance()->getUrlSegments();
+    $this->original_path = nmvc::instance()->getOriginalPathInfo();
   }
 
   /**
@@ -85,6 +88,14 @@ class NanoMVC_Library_URI {
    */
   public function uri(int $index = 1): string {
     return implode('/', $this->uri_to_array($index));
+  }
+
+  /**
+   * Get the original URI before routing, without normalizing slashes or other characters.
+   * Query parameters are not part of the URI.
+   */
+  public function original_uri(): string {
+    return $this->original_path;
   }
 
   /**

@@ -29,6 +29,7 @@ class nmvc_core {
   protected ?string $controller_name = null; // real controller name from URL
   protected ?string $action = null; // real controller method name from URL
   protected string $path_info = '/'; // array of url path_info segments
+  protected string $original_path_info = '/'; // original URI before routing
   protected array $url_segments = []; // array of url path_info segments
   protected NanoMVC_View $view;
 
@@ -81,6 +82,7 @@ class nmvc_core {
    */
   public function __construct(string $id = 'default') {
     $this->path_info = !empty($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/'; // set path_info
+    $this->original_path_info = $this->path_info;
 
     $this->setupPluginIncludePath(); // allow plugin classes to be autoloaded
 
@@ -456,6 +458,13 @@ class nmvc_core {
    */
   public function getUrlSegments(): array {
     return $this->url_segments;
+  }
+
+  /**
+   * Get the original URI before routing, with its leading slash and without query parameters.
+   */
+  public function getOriginalPathInfo(): string {
+    return $this->original_path_info;
   }
 
   /**
