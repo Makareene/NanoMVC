@@ -179,21 +179,23 @@ class NanoMVC_Library_Helper {
   }
 
   /**
-   * Send ETag header and stop response if content was not modified.
+   * Send ETag and evaluate If-None-Match using weak comparison.
    *
    * @access public
-   * @param string $hash ETag hash
+   * @param string $hash ETag hash without surrounding quotes
    * @return void
    */
   public function etag(string $hash): void {
     $etag = '"' . $hash . '"';
 
-    $current_etag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? null;
+    $request_etag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? null;
 
-    if ($current_etag === $etag) {
+    if (is_string($request_etag) && $this->_etag_matches($request_etag, $etag)) {
       $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
+      $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+      $status = in_array($method, ['GET', 'HEAD'], true) ? '304 Not Modified' : '412 Precondition Failed';
 
-      $this->send_headers([ $protocol . ' 304 Not Modified' => null
+      $this->send_headers([ $protocol . ' ' . $status => null
                            ,'ETag' => $etag
                           ]);
 
@@ -201,6 +203,31 @@ class NanoMVC_Library_Helper {
     }
 
     $this->send_headers(['ETag' => $etag]);
+  }
+
+  /** Match a complete If-None-Match field; W/ does not affect this comparison. */
+  protected function _etag_matches(string $header, string $etag): bool {
+    $header = trim($header, " \t");
+
+    if ($header === '*')
+      return true;
+
+    $offset = 0;
+    $length = strlen($header);
+    $matched = false;
+
+    while ($offset < $length) {
+      // Commas inside quoted tags are data. Empty list members are permitted by HTTP list parsing.
+      if (preg_match('~\G[ \t]*(?:(?:W/)?("[\x21\x23-\x7E\x80-\xFF]*"))?[ \t]*(?:,|\z)~', $header, $parts, 0, $offset) !== 1)
+        return false;
+
+      if (($parts[1] ?? null) === $etag)
+        $matched = true;
+
+      $offset += strlen($parts[0]);
+    }
+
+    return $matched;
   }
 
 }
