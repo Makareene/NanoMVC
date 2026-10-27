@@ -14,7 +14,7 @@ defined('NMVC_BASEDIR') || define('NMVC_BASEDIR', dirname(__DIR__) . DS);
 
 defined('NMVC_MYAPPDIR') || define('NMVC_MYAPPDIR', NMVC_BASEDIR . 'myapp' . DS);
 
-defined('NMVC_VERSION') || define('NMVC_VERSION', '1.0.8');
+defined('NMVC_VERSION') || define('NMVC_VERSION', '1.1.0');
 
 /**
  * nmvc -> nmvc_core

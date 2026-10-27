@@ -2,6 +2,53 @@
 
 ---
 
+## 1.1.0 (NanoMVC)
+
+### View System
+
+- Added support for views in nested directories, using names such as `folder/subfolder/page` for `folder/subfolder/page_view.php`.
+- View names use `/` as the directory separator. Absolute paths, backslashes, empty names, null bytes, and dot-slash paths such as `./` and `../` are rejected.
+- View searches skip glob results that expand to a dot-slash path. Symbolic links remain supported, including links outside the view directory.
+- File discovery for controllers, models, and configs now rejects names containing path separators.
+- Kept application and system view entry points separate while sharing their rendering logic.
+- Preserved the current view path across nested rendering, including when a nested view fails.
+- Protected the included view path from being overwritten by variables passed to a view.
+- Ensured `fetch()` cleans its output buffer when rendering throws an exception.
+- The internal `$filename` variable is no longer automatically exposed to view templates; it can still be passed as view data.
+
+### Core and URI Library
+
+- Added `isAbsolutePath()` and used it for cross-platform autoload, access file, and asset source paths.
+- Preserved the original `PATH_INFO` before routing, accessible via `getOriginalPathInfo()` and `NanoMVC_Library_URI::original_uri()`.
+
+### Access Plugin
+
+- Require an active PHP session before the access library is initialized; applications must start the session themselves.
+- Allow `max_failed` to be set to `0` to disable account locking.
+- Use a generic login failure for unknown and unactivated accounts.
+- Regenerate the session ID on successful login and clear cached user data on logout.
+- Clear the session unlock state after an incorrect password and check for password-hashing failures during activation.
+- Recognize absolute XML access file paths on Windows and Unix-like systems.
+
+### Asset and Helper Libraries
+
+- Allow absolute source paths for bundled assets, including Windows paths.
+- Added `etag()` to send ETag headers and handle conditional requests.
+- Support `If-None-Match` lists, weak validators, and the `*` wildcard; matching GET and HEAD requests return 304, and other matching methods return 412.
+
+### Database (PDO)
+
+- Preserve the original `PDOException` as the previous exception for connection and query errors.
+
+### Documentation and Project Files
+
+- Added missing comments for framework methods and properties.
+- Moved the `myfiles` ignore rules to the root `.gitignore` and retained the plugins README.
+- Fixed the default controller example to use the view name without the `_view` suffix.
+- Corrected the PHP compatibility information in the application entry point to PHP 8.3+.
+
+---
+
 ## 1.0.9 (NanoMVC)
 
 ### Asset Plugin
