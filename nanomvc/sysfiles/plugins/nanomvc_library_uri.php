@@ -26,7 +26,9 @@
  */
 class NanoMVC_Library_URI {
 
+  /** Routed URI path segments. */
   protected array $path = [];
+  /** Original request path before routing. */
   protected string $original_path = '/';
 
   /**

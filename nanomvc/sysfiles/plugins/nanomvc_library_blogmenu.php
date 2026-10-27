@@ -15,6 +15,7 @@
 
 class NanoMVC_Library_BlogMenu {
 
+  /** Expected date format in blog metadata. */
   protected string $format = 'Y-m-d H:i';
 
   /**
@@ -22,6 +23,14 @@ class NanoMVC_Library_BlogMenu {
    */
   public function __construct() {}
 
+  /**
+   * Read category metadata from one or all controller files.
+   *
+   * @access public
+   * @param ?string $controller
+   * @param string $order
+   * @return array
+   */
   public function get_categories(?string $controller = null, string $order = 'created desc'): array {
     $categories = [];
 
@@ -70,6 +79,16 @@ class NanoMVC_Library_BlogMenu {
     return $categories;
   }
 
+  /**
+   * Read article metadata from public controller action comments.
+   *
+   * @access public
+   * @param ?string $action
+   * @param string $order
+   * @param ?string $controller_name
+   * @param ?string $act
+   * @return array
+   */
   public function get_articles(?string $action = null, string $order = 'created desc', ?string $controller_name = null, ?string $act = null): array {
     $articles = [];
 
@@ -127,6 +146,14 @@ class NanoMVC_Library_BlogMenu {
     return $articles;
   }
 
+  /**
+   * Sort metadata records by the requested field and direction.
+   *
+   * @access private
+   * @param array $categories
+   * @param string $order
+   * @return void
+   */
   private function _sort(array &$categories, string $order = ''): void {
     $order = trim($order);
     $parts = preg_split('/\s+/', $order);
@@ -144,6 +171,14 @@ class NanoMVC_Library_BlogMenu {
     });
   }
 
+  /**
+   * Return the previous and next items surrounding the current key.
+   *
+   * @access public
+   * @param array $items
+   * @param string|int $current
+   * @return array
+   */
   public function get_nav(array &$items, string|int $current): array {
     $res = ['pre' => [], 'next' => []];
     $keys = array_keys($items);
@@ -158,6 +193,14 @@ class NanoMVC_Library_BlogMenu {
     return $res;
   }
 
+  /**
+   * Assign page numbers to items and return the total page count.
+   *
+   * @access public
+   * @param array $items
+   * @param int $limit
+   * @return int|bool
+   */
   public function pagination(array &$items, int $limit = 1): int|bool {
     $limit = abs($limit);
     if ($limit === 0) return false;

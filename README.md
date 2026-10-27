@@ -14,7 +14,7 @@ Inspired by TinyMVC and modernized for PHP 8.3+, NanoMVC focuses on simplicity, 
 - Lightweight MVC architecture
 - PDO database support
 - Custom database plugin support
-- Automatic controller, model, view, and config discovery
+- Automatic controller, model, view, and config discovery, including views in nested directories
 - Simple reusable library system
 - Built-in error and exception handling
 - Flexible application structure
@@ -43,7 +43,13 @@ https://nanomvc.nipaa.fyi
 
 ## Changelog
 
-See:
+Recent versions:
+
+- **1.1.0** — nested views, safer view rendering, original URI access, conditional ETags, and access and compatibility improvements.
+- **1.0.9** — Asset plugin for JavaScript and CSS bundling.
+- **1.0.8** — XML-based Access plugin for users, roles, and permissions.
+
+For the complete history, see:
 
 [NEWS.md](./NEWS.md)
 

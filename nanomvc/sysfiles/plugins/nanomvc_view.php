@@ -17,7 +17,11 @@
  * @author     Monte Ohrt, Nipaa (modifications)
  */
 class NanoMVC_View {
+  /** Variables shared by all views rendered by this instance. */
   protected array $view_vars = [];
+
+  /** Path of the view currently being rendered, or false if none is active. */
+  protected string|bool $filepath = false;
 
   /**
    * Class constructor
@@ -52,15 +56,11 @@ class NanoMVC_View {
    *
    * @access public
    * @param  string $view_name the name of the view file
+   * @param  array|null $view_vars variables for this view
    * @return void
    */    
   public function display(string $view_name, ?array $view_vars = null): void {
-    $filepath = nmvc::instance()->findView($view_name);
-
-    if (!$filepath)
-      throw new Exception("View '{$view_name}' was not found.", 500);
-
-    $this->_view($filepath, $view_vars);
+    $this->_display($view_name, $view_vars);
   }  
 
   /**
@@ -75,9 +75,14 @@ class NanoMVC_View {
    */    
   public function fetch(string $filename, ?array $view_vars = null): string {
     ob_start();
-    $this->display($filename, $view_vars);
-    $results = ob_get_contents();
-    ob_end_clean();
+
+    try {
+      $this->display($filename, $view_vars);
+      $results = ob_get_contents();
+    } finally {
+      ob_end_clean();
+    }
+
     return $results;
   }
 
@@ -92,12 +97,26 @@ class NanoMVC_View {
    * @return void
    */    
   public function sysview(string $view_name, ?array $view_vars = null): void {
-    $filepath = nmvc::instance()->findView($view_name);
+    $this->_display($view_name, $view_vars);
+  }
 
-    if (!$filepath)
-      throw new Exception("View '{$view_name}' was not found.", 500);
+  /**
+   * Find and render a view, preserving the path of any enclosing view.
+   *
+   * @access protected
+   * @param string $view_name view name without suffix or extension
+   * @param array|null $view_vars variables for this view
+   * @return void
+   */
+  protected function _display(string $view_name, ?array $view_vars = null): void {
+    $previous_filepath = $this->filepath;
 
-    $this->_view($filepath, $view_vars);
+    try {
+      $this->filepath = nmvc::instance()->findView($view_name);
+      $this->_view($view_name, $view_vars);
+    } finally {
+      $this->filepath = $previous_filepath;
+    }
   }
 
   /**
@@ -106,18 +125,21 @@ class NanoMVC_View {
    * internal: display a view file
    *
    * @access protected
-   * @param string $filename
+   * @param string $view_name view name without suffix or extension
    * @param array|null $view_vars
    * @return void
    */
-  protected function _view(string $filename, ?array $view_vars = null): void {
+  protected function _view(string $view_name, ?array $view_vars = null): void {
+    if (!$this->filepath)
+      throw new Exception("View '{$view_name}' was not found.", 500);
+
     extract($this->view_vars);
     if (isset($view_vars)) extract($view_vars);
 
     try {
-      include $filename;
+      include $this->filepath;
     } catch (Throwable $e) {
-      throw new Exception("Trying to include view '$filename': " . $e->getMessage(), 500);
+      throw new Exception("Trying to include view '{$this->filepath}': " . $e->getMessage(), 500);
     }
   }
 
