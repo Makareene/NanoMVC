@@ -120,6 +120,13 @@ class NanoMVC_ErrorHandler extends ErrorException {
 
   }
 
+  /**
+   * Send an HTTP error status unless headers have already been sent.
+   *
+   * @access private
+   * @param int $code
+   * @return void
+   */
   private static function _hSent(int $code): void {
     if (headers_sent()) return;
 
@@ -135,6 +142,12 @@ class NanoMVC_ErrorHandler extends ErrorException {
 
   }
 
+  /**
+   * Return supported HTTP error status descriptions.
+   *
+   * @access private
+   * @return array
+   */
   private static function _get_statuses(): array {
     return [
       400 => 'Bad Request',

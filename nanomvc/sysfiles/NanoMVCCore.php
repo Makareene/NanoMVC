@@ -26,11 +26,22 @@ defined('NMVC_VERSION') || define('NMVC_VERSION', '1.0.8');
  */
 
 class nmvc_core {
-  protected ?string $controller_name = null; // real controller name from URL
-  protected ?string $action = null; // real controller method name from URL
-  protected string $path_info = '/'; // array of url path_info segments
-  protected string $original_path_info = '/'; // original URI before routing
-  protected array $url_segments = []; // array of url path_info segments
+  /** Original controller name resolved from the routed URL. */
+  protected ?string $controller_name = null;
+
+  /** Original action name resolved from the routed URL. */
+  protected ?string $action = null;
+
+  /** Current request path, updated by routing. */
+  protected string $path_info = '/';
+
+  /** Request path before routing. */
+  protected string $original_path_info = '/';
+
+  /** Segments of the routed request path. */
+  protected array $url_segments = [];
+
+  /** Shared view renderer for the current application instance. */
   protected NanoMVC_View $view;
 
   protected const PATHS = [ NMVC_MYAPPDIR
@@ -338,6 +349,22 @@ class nmvc_core {
    * @return string
    */
   protected function prepareFileFilter(string $type, string $filter): string {
+    if ($type === 'view') {
+      if ( $filter === ''
+          || str_contains($filter, "\0")
+          || $this->isAbsolutePath($filter)
+          || str_contains($filter, '\\')
+          || str_contains($filter, './')
+          || $filter === '..'
+          || str_ends_with($filter, '/..')
+         )
+        throw new Exception("Invalid view path '{$filter}'.", 500);
+
+      $filter = str_replace('/', DS, $filter);
+    } elseif (str_contains($filter, '/') || str_contains($filter, '\\')) {
+      throw new Exception("Invalid {$type} name '{$filter}'.", 500);
+    }
+
     $filter = strtolower($filter);
     return match ($type) { 'config'     => 'config_' . $filter . '.php'
                           ,'controller' => $filter . '.php'
@@ -385,7 +412,16 @@ class nmvc_core {
     $files = [];
 
     foreach (self::PATHS as $base_path) {
-      foreach (glob($base_path . self::PERSONAL_PATH[$type] . DS . $filter) ?: [] as $file_path) {
+      $dir_path = $base_path . self::PERSONAL_PATH[$type] . DS;
+
+      foreach (glob($dir_path . $filter) ?: [] as $file_path) {
+        if ($type === 'view') {
+          // Apply the dot-slash restriction to expanded glob paths as well.
+          $relative_path = str_replace('\\', '/', substr($file_path, strlen($dir_path)));
+
+          if (str_contains($relative_path, './')) continue;
+        }
+
         $file_name = basename($file_path);
 
         if (!isset($files[$file_name]))

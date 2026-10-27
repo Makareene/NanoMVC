@@ -18,9 +18,13 @@
  */
 class NanoMVC_Controller {
 
+  /** Loader for controller models, libraries, and databases. */
   public NanoMVC_Load $load;
+  /** Shared view renderer for this controller. */
   public NanoMVC_View $view;
+  /** Original action name resolved for this controller. */
   private ?string $action = null;
+  /** Original controller name resolved for this request. */
   private ?string $controller = null;
 
   /**
@@ -59,18 +63,44 @@ class NanoMVC_Controller {
     throw new Exception("Unknown controller method '{$function}'", 404);
   }
 
+  /**
+   * Set the original action name for this controller.
+   *
+   * @access public
+   * @param string $name
+   * @return void
+   */
   public final function _set_action(string $name): void {
     $this->action = $name;
   }
 
+  /**
+   * Get the original action name for this controller.
+   *
+   * @access public
+   * @return string|null
+   */
   public final function _get_action(): string|null {
     return $this->action;
   }
 
+  /**
+   * Set the original controller name for this request.
+   *
+   * @access public
+   * @param string $name
+   * @return void
+   */
   public final function _set_controller(string $name): void {
     $this->controller = $name;
   }
 
+  /**
+   * Get the original controller name for this request.
+   *
+   * @access public
+   * @return string|null
+   */
   public final function _get_controller(): string|null {
     return $this->controller;
   }
