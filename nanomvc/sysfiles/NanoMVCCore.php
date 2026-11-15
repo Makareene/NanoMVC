@@ -25,7 +25,7 @@ defined('NMVC_VERSION') || define('NMVC_VERSION', '1.1.0');
  * @author		Monte Ohrt, Nipaa (modifications)
  */
 
-class nmvc_core {
+abstract class nmvc_core {
   /** Original controller name resolved from the routed URL. */
   protected ?string $controller_name = null;
 

@@ -8,15 +8,11 @@
  * License:    LGPL v2.1 or later (see LICENSE file)
  */ 
 
-// directory separator alias 
-if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
-
-require_once dirname(__FILE__) . DS . 'NanoMVCCore.php'; // main core class
-
 /**
  * nmvc
  *
- * main object class
+ * Default application class. A custom replacement must also be named nmvc.
+ * Load NanoMVCCore.php before this file.
  *
  * @package		NanoMVC
  * @author		Monte Ohrt, Nipaa (modifications)
