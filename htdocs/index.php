@@ -23,7 +23,12 @@ if (!defined('NMVC_BASEDIR')) define('NMVC_BASEDIR', __DIR__ . DS . '..' . DS . 
 // Set to 0 if you want external error/exception handling
 define('NMVC_ERROR_HANDLING', 1);
 
-// Load the core NanoMVC system
+// Load the abstract NanoMVC core first.
+require NMVC_BASEDIR . 'sysfiles' . DS . 'NanoMVCCore.php';
+
+// To customize nmvc, copy NanoMVC.php to myapp, myfiles, or any other location.
+// Point the require below to your copy and keep the class named nmvc.
+// Load only one definition of nmvc.
 require NMVC_BASEDIR . 'sysfiles' . DS . 'NanoMVC.php';
 
 // Create and run the app
