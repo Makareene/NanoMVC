@@ -30,6 +30,11 @@ return [
   // PHP class that handles system errors
  ,'error_handler_class' => 'NanoMVC_ErrorHandler'
 
+  // Optional HTML error views. Names are relative to a views directory.
+  // ,'error_views' => [ 'error'    => 'errors/general'
+  //                    ,'notfound' => 'errors/missing'
+  //                   ]
+
   // Enable timer. Use {NMVC_TIMER} in your view to see it
  ,'timer' => true
 
