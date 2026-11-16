@@ -13,6 +13,7 @@
 return [ 'templ' => [ 'css-top' => [ 'name' => 'app.css'
                                     ,'list' => [ 'style.css'
                                                ]
+                                    ,'mode' => 'always'
                                    ]
                      ,'js-top' => [ 'name' => 'app.js'
                                    ,'list' => [ 'script.js'

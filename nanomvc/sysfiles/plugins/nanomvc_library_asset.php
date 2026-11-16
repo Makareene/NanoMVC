@@ -60,14 +60,14 @@ class NanoMVC_Library_Asset {
   }
 
   /**
-   * Generate or return a configured asset list.
+   * Get the asset configuration with its effective generation mode.
    *
    * @param string $template
    * @param string $key
    * @return array
    * @throws Exception
    */
-  protected function generate(string $template, string $key): array {
+  protected function get_asset_config(string $template, string $key): array {
     if (empty($this->config[$template]))
       throw new Exception('Template "' . $template . '" was not found in the project generation config.', 500);
 
@@ -82,11 +82,32 @@ class NanoMVC_Library_Asset {
     if (empty($asset['list']) || !is_array($asset['list']))
       throw new Exception('Asset list was not found for key "' . $key . '".', 500);
 
-    if ($this->mode_tpl_generation === 'no')
-      return $asset['list'];
+    $mode = array_key_exists('mode', $asset)
+          ? $asset['mode']
+          : $this->mode_tpl_generation;
 
-    if (!in_array($this->mode_tpl_generation, ['yes', 'always'], true))
-      throw new Exception('Unknown template generation mode "' . $this->mode_tpl_generation . '".', 500);
+    if (!in_array($mode, ['no', 'yes', 'always'], true))
+      throw new Exception("Unknown generation mode for asset '{$template}/{$key}'. Expected no, yes or always.", 500);
+
+    $asset['mode'] = $mode;
+
+    return $asset;
+  }
+
+  /**
+   * Generate or return a configured asset list.
+   *
+   * @param string $template
+   * @param string $key
+   * @return array
+   * @throws Exception
+   */
+  protected function generate(string $template, string $key): array {
+    $asset = $this->get_asset_config($template, $key);
+    $mode = $asset['mode'];
+
+    if ($mode === 'no')
+      return $asset['list'];
 
     $folder = $this->get_folder($asset['name']);
 
@@ -99,7 +120,7 @@ class NanoMVC_Library_Asset {
 
     $target_file = $target_directory . DS . $asset['name'];
 
-    $need_generation = $this->mode_tpl_generation === 'always' || !is_file($target_file);
+    $need_generation = $mode === 'always' || !is_file($target_file);
 
     if ($need_generation) {
       if (!is_dir($target_directory)
@@ -159,6 +180,18 @@ class NanoMVC_Library_Asset {
    */
   public function get(string $template, string $key): array {
     return $this->generate($template, $key);
+  }
+
+  /**
+   * Get the effective generation mode without generating the asset.
+   *
+   * @param string $template
+   * @param string $key
+   * @return string
+   * @throws Exception
+   */
+  public function get_mode(string $template, string $key): string {
+    return $this->get_asset_config($template, $key)['mode'];
   }
 
 }
