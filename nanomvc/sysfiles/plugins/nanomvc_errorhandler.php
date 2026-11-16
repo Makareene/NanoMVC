@@ -57,22 +57,89 @@ class NanoMVC_ErrorHandler extends ErrorException {
     $file     = $e->getFile();
     $line     = $e->getLine();
 
-    $view = !isset($_GET['is_ajax_json']) ? ((in_array($code, [404, 410], true)) ? 'notfound' : 'error') : 'json';
-
     $statuses = self::_get_statuses();
+    $view_vars = [ 'code'       => $code
+                  ,'code_val'   => $code_val
+                  ,'message'    => $message
+                  ,'file'       => $file
+                  ,'line'       => $line
+                  ,'outputed'   => headers_sent() ? 1 : 0
+                  ,'show_error' => ini_get('display_errors') === '1'
+                                && (isset($statuses[$code]) || $code === 0 || (error_reporting() & $code))
+                  ,'statuses'   => $statuses
+                 ];
 
-    if ($view == 'json') header('Content-Type: application/json');
+    $app = nmvc::instance();
+    $views = $app->getView();
+    $is_json = isset($_GET['is_ajax_json']);
+    $default_view = in_array($code, [404, 410], true) ? 'notfound' : 'error';
+    $view_name = $is_json
+               ? 'json'
+               : ($app->getAppConfig()['error_views'][$default_view] ?? $default_view);
 
-    nmvc::instance()->getView()->sysview($view, [ 'code'       => $code
-                                                 ,'code_val'   => $code_val
-                                                 ,'message'    => $message
-                                                 ,'file'       => $file
-                                                 ,'line'       => $line
-                                                 ,'outputed'   => headers_sent() ? 1 : 0
-                                                 ,'show_error' => ini_get('display_errors') === '1'
-                                                               && (isset($statuses[$code]) || $code === 0 || (error_reporting() & $code))
-                                                 ,'statuses'   => $statuses
-                                                ]);
+    if ($is_json && !headers_sent())
+      header('Content-Type: application/json');
+
+    $buffer_level = ob_get_level();
+    ob_start();
+
+    try {
+      $views->sysview($view_name, $view_vars);
+    } catch (Throwable $view_error) {
+      while (ob_get_level() > $buffer_level)
+        ob_end_clean();
+
+      self::_hSent($code);
+      self::_displayFallback($view_vars, $view_error, $is_json);
+      return;
+    }
+
+    ob_end_flush();
+  }
+
+  /**
+   * Display the original error directly when the selected view fails.
+   *
+   * @param array $view_vars
+   * @param Throwable $view_error
+   * @param bool $is_json
+   * @return void
+   */
+  private static function _displayFallback(array $view_vars, Throwable $view_error, bool $is_json): void {
+    $code = $view_vars['code'];
+    $name = $view_vars['code_val'];
+
+    if ($is_json) {
+      $data = [ 'err_type' => isset($view_vars['statuses'][$code]) ? 'HTTP' : 'Error'
+               ,'err_code' => $code
+               ,'err_name' => $name
+              ];
+
+      if ($view_vars['show_error'])
+        $data += [ 'err_msg'  => $view_vars['message']
+                  ,'err_file' => $view_vars['file']
+                  ,'err_line' => $view_vars['line']
+                 ];
+
+      if (!headers_sent())
+        header('Content-Type: application/json');
+
+      echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+      return;
+    }
+
+    $text = $code . ' ' . $name;
+
+    if ($view_vars['show_error']) {
+      $text .= "\n" . $view_vars['message'];
+      $text .= "\n" . $view_vars['file'] . ':' . $view_vars['line'];
+      $text .= "\nError rendering view: " . $view_error->getMessage();
+    }
+
+    if (!headers_sent())
+      header('Content-Type: text/html; charset=UTF-8');
+
+    echo '<pre>', htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), '</pre>';
   }
 
   /**
@@ -95,7 +162,6 @@ class NanoMVC_ErrorHandler extends ErrorException {
       E_USER_ERROR        => 'E_USER_ERROR',
       E_USER_WARNING      => 'E_USER_WARNING',
       E_USER_NOTICE       => 'E_USER_NOTICE',
-      E_STRICT            => 'E_STRICT',
       E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
       E_DEPRECATED        => 'E_DEPRECATED',
       E_USER_DEPRECATED   => 'E_USER_DEPRECATED',
