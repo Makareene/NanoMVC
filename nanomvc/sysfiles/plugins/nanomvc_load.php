@@ -76,9 +76,10 @@ class NanoMVC_Load {
    * @access public
    * @param string $lib_name the library class name
    * @param string|null $alias the property name alias
+   * @param array $args constructor arguments
    * @return bool
    */
-  public function library(string $lib_name, ?string $alias = null): bool {
+  public function library(string $lib_name, ?string $alias = null, array $args = []): bool {
     $alias ??= $lib_name; // use lib name if alias not provided
 
     if (empty($alias)) throw new Exception('Library name cannot be empty', 500);
@@ -97,7 +98,7 @@ class NanoMVC_Load {
     if (!class_exists($class_name))
       throw new Exception("Library class '{$class_name}' was not found.", 500);
 
-    $controller->$alias = new $class_name; // instantiate library
+    $controller->$alias = new $class_name(...$args); // instantiate library
 
     return true;
   }
